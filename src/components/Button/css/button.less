@@ -1,0 +1,49 @@
+.button {
+  cursor: pointer;
+  font-size: 14px;
+  width: 100%;
+  padding: 6px 18px;
+  transition: all 0.3s;
+  border-radius: 3px;
+  border: none;
+  background: #fff;
+  outline: none;
+  line-height: @baseLineHeight;
+
+  span {
+    vertical-align: middle;
+  }
+
+  span:last-child {
+    margin-left: 7px;
+  }
+}
+
+.default {
+  border: 1px solid #e3e3e3;
+
+  &:hover {
+    color: @hoverColor;
+    border-color: @hoverColor;
+  }
+}
+
+.primary {
+  border: 1px solid @hoverColor;
+  background-color: @hoverColor;
+  color: #fff;
+
+  &:hover {
+    background-color: #33b4de;
+    border-color: #33b4de;
+  }
+}
+
+.text {
+  border: none;
+  padding: 5px;
+
+  &:hover {
+    color: @hoverColor;
+  }
+}

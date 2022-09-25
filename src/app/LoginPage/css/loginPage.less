@@ -1,0 +1,101 @@
+@borderRadius: 8px;
+@borderColor: #e7e7e7;
+
+.loginPageContainer {
+  width: 470px;
+  // height: 333px;
+  background-color: #fff;
+  border-radius: @borderRadius;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  padding: 52px 82px;
+  background-color: #fff;
+  background-image: url(https://s1.hdslb.com/bfs/seed/jinkela/short/mini-login/img/22_open.72c00877.png),
+    url(https://s1.hdslb.com/bfs/seed/jinkela/short/mini-login/img/33_open.43a09438.png);
+  background-position: 0 100%, 100% 100%;
+  background-repeat: no-repeat, no-repeat;
+  background-size: 23%;
+
+  .tabs {
+    display: flex;
+    justify-content: center;
+
+    .active {
+      color: #4fa5d9;
+    }
+
+    .divider {
+      border-left: 1px solid #e7e7e7;
+      margin: 0 21px;
+    }
+
+    .title {
+      font-size: 18px;
+      cursor: pointer;
+    }
+  }
+
+  .userLogin {
+    margin-top: 20px;
+    border: 1px solid @borderColor;
+    border-radius: @borderRadius;
+  }
+
+  .userRegister {
+    .userLogin();
+  }
+
+  .username,
+  .phone {
+    border: none;
+    border-radius: @borderRadius;
+  }
+
+  .password {
+    .username();
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+    border-top: 1px solid @borderColor;
+  }
+
+  .registerButton {
+    margin-top: 20px;
+    text-align: center;
+  }
+
+  .buttonGroup {
+    margin-top: 20px;
+    display: flex;
+
+    button:first-child {
+      margin-right: 14px;
+    }
+
+    & > button {
+      flex: 1;
+    }
+  }
+
+  .thirdPartyLogin {
+    margin-top: 24px;
+
+    .title {
+      font-size: 13px;
+      text-align: center;
+      color: #999;
+      margin-bottom: 12px;
+    }
+
+    .sns {
+      display: flex;
+      font-size: 14px;
+      justify-content: center;
+    }
+
+    .button {
+      width: 80px;
+    }
+  }
+}

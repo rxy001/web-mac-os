@@ -1,0 +1,30 @@
+.bottomBarWrapper {
+  height: 47px;
+  width: 70px;
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  box-shadow: 0 0 10px rgb(0 0 0 / 56%);
+  border: 1px solid var(--color-white-200);
+  border-radius: 14px;
+  backdrop-filter: blur(5px);
+  background: rgb(255 255 255 / 50%);
+  z-index: 999;
+  align-items: center;
+  overflow: hidden;
+  box-sizing: content-box;
+
+  .iconWrapper {
+    width: 45px;
+    text-align: center;
+    flex: none;
+    line-height: 0;
+
+    .icon {
+      width: 35px;
+      height: 35px;
+    }
+  }
+}

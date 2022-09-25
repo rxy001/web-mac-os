@@ -1,0 +1,78 @@
+@import "~less/mixins";
+
+.fullscreen {
+  border-radius: 0 !important;
+}
+
+.window {
+  position: fixed;
+  top: 0;
+  left: 0;
+  overflow: auto;
+  background-color: #fff;
+  border-radius: 8px;
+  border: 1px solid rgb(68, 68, 68);
+  box-shadow: 0 3px 6px -4px #0000001f, 0 6px 16px #00000014,
+    0 9px 28px 8px #0000000d;
+  touch-action: none;
+
+  .header {
+    min-width: 200px;
+    height: 34px;
+    position: relative;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+    background-color: #dfe1e5;
+    box-shadow: 0 2px #0000001f;
+    display: flex;
+    touch-action: none;
+
+    .title {
+      min-width: 300px;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+  }
+}
+
+.operation {
+  display: flex;
+  color: #000;
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  touch-action: none;
+
+  .closeIcon {
+    margin-right: 8px;
+    background-color: #fe6057;
+  }
+
+  .collapseIcon {
+    margin-right: 8px;
+    background-color: #febc2e;
+  }
+
+  .fullscreenIcon {
+    background-color: #27c840;
+  }
+
+  > div {
+    width: 15px;
+    height: 15px;
+    border-radius: 7px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    .icon {
+      width: 15px;
+      height: 15px;
+      padding: 2px;
+      cursor: default;
+    }
+  }
+}
