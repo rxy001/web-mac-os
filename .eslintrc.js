@@ -11,7 +11,6 @@ module.exports = {
   // Our default export contains most of our ESLint rules,
   // including ECMAScript 6+ and React. It requires eslint, eslint-plugin-import, eslint-plugin-react, eslint-plugin-react-hooks, and eslint-plugin-jsx-a11y.
   extends: [
-    "eslint:recommended",
     "airbnb",
     "airbnb/hooks",
     "plugin:import/typescript",

@@ -91,7 +91,7 @@ function Window(
     },
   })
 
-  const setIndex = useCallback(() => {
+  const setZIndex = useCallback(() => {
     const maxZIndex = windowZIndex.maxZIndex()
 
     if (windowZIndex.get(id) < maxZIndex) {
@@ -184,7 +184,7 @@ function Window(
         },
       })
       setActivated(true, onExpanded)
-      setIndex()
+      setZIndex()
     }
   }, [
     api,
@@ -193,7 +193,7 @@ function Window(
     activated,
     isFullscreen,
     setActivated,
-    setIndex,
+    setZIndex,
     setDisplay,
     onExpanded,
   ])
@@ -230,7 +230,7 @@ function Window(
       <animated.div
         {...resizeBind()}
         style={mergedStyle}
-        onMouseDown={setIndex}
+        onMouseDown={setZIndex}
         className={classNames(
           styles.window,
           isFullscreen ? styles.fullscreen : "",
