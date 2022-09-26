@@ -1,19 +1,19 @@
-import axios from "axios";
-import type { AbortControllerMap, Request } from "./interface";
+import axios from "axios"
+import type { AbortControllerMap, Request } from "./interface"
 
 const instance = axios.create({
   baseURL: "/api/v1",
   timeout: 3000,
   withCredentials: true,
-});
+})
 
-const abortControllerMap: AbortControllerMap = {};
+const abortControllerMap: AbortControllerMap = {}
 
 const request: Request = ({ cancelable, ...config }) => {
-  let key = typeof cancelable === "string" ? cancelable : config.url;
+  const key = typeof cancelable === "string" ? cancelable : config.url
 
   if (cancelable) {
-    abortControllerMap[key] = new AbortController();
+    abortControllerMap[key] = new AbortController()
   }
 
   return instance({
@@ -21,24 +21,25 @@ const request: Request = ({ cancelable, ...config }) => {
     signal: abortControllerMap[key]?.signal,
   })
     .then((res) => res.data)
-    .catch((error) => Promise.reject(error.toJSON()));
-};
+    .catch((error) => Promise.reject(error.toJSON()))
+}
 
 request.cancel = (key) => {
-  const abortController = abortControllerMap[key];
+  const abortController = abortControllerMap[key]
   if (!abortController) {
-    console.warn("abortControllerMap.key is undefined");
-    return;
+    // eslint-disable-next-line no-console
+    console.warn("abortControllerMap.key is undefined")
+    return
   }
-  abortController.abort();
-};
+  abortController.abort()
+}
 
 request.get = (url, config = {}) =>
   request({
     url,
     ...config,
     method: "get",
-  });
+  })
 
 request.post = (url, data, config = {}) =>
   request({
@@ -46,14 +47,14 @@ request.post = (url, data, config = {}) =>
     data,
     ...config,
     method: "post",
-  });
+  })
 
 request.delete = (url, config = {}) =>
   request({
     url,
     ...config,
     method: "post",
-  });
+  })
 
 request.put = (url, data, config = {}) =>
   request({
@@ -61,6 +62,6 @@ request.put = (url, data, config = {}) =>
     data,
     ...config,
     method: "put",
-  });
+  })
 
-export default request;
+export default request

@@ -1,25 +1,26 @@
-import { max, values } from "lodash";
+import { max, values } from "lodash"
 
-type Name = string;
-type ZIndex = number;
+type Name = string
+type ZIndex = number
 type Value = {
-  [key: Name]: ZIndex;
-};
+  [key: Name]: ZIndex
+}
 
 class WindowZIndex {
-  value: Value = {};
+  value: Value = {}
 
   set(name: Name, zIndex: ZIndex) {
-    return (this.value[name] = zIndex);
+    this.value[name] = zIndex
+    return zIndex
   }
 
   get(name: Name) {
-    return this.value[name];
+    return this.value[name]
   }
 
   maxZIndex() {
-    return max(values(this.value)) ?? 0;
+    return max(values(this.value)) ?? 0
   }
 }
 
-export default new WindowZIndex();
+export default new WindowZIndex()

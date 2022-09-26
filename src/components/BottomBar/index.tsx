@@ -1,3 +1,3 @@
-export { default } from "./BottomBar";
+export { default } from "./BottomBar"
 
-export type { BottomBarProps } from "./interface";
+export type { BottomBarProps } from "./interface"

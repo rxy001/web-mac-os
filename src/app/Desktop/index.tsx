@@ -1,7 +1,8 @@
-import { App, BottomBar } from "brc";
-import styles from "./css";
+import { App, BottomBar } from "brc"
+import styles from "./css"
 
-const importTypora = () => import("../Typora");
+const importTypora = () => import("../Typora")
+
 function Desktop() {
   return (
     <div className={styles.desktop}>
@@ -10,7 +11,7 @@ function Desktop() {
       </div>
       <BottomBar />
     </div>
-  );
+  )
 }
 
-export default Desktop;
+export default Desktop

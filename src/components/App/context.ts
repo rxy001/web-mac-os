@@ -1,4 +1,4 @@
-import { createContext } from "react";
-import { AppContextProps } from "./interface";
+import { createContext } from "react"
+import type { AppContextProps } from "./interface"
 
-export const AppContext = createContext<AppContextProps>({} as any);
+export const AppContext = createContext<AppContextProps>({} as any)

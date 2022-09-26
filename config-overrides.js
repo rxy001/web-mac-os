@@ -79,7 +79,7 @@ function addLessLoader() {
     const isEnvDevelopment = webpackEnv === "development";
     const isEnvProduction = webpackEnv === "production";
     const shouldUseSourceMap = process.env.GENERATE_SOURCEMAP !== "false";
-    const publicPath = config.output.publicPath;
+    const {publicPath} = config.output;
     const shouldUseRelativeAssetPaths = publicPath === "./";
 
     // copy from react-scripts

@@ -1,8 +1,8 @@
-import { useState, ChangeEvent, memo } from "react";
-import { useCallback } from "react";
-import classNames from "classnames";
-import styles from "./css";
-import type { InputProps } from "./interface";
+import type { ChangeEvent } from "react"
+import { useState, memo, useCallback } from "react"
+import classNames from "classnames"
+import styles from "./css"
+import type { InputProps } from "./interface"
 
 function Input({
   suffix,
@@ -14,22 +14,22 @@ function Input({
   value: propsValue,
   ...props
 }: InputProps) {
-  const [value, setValue] = useState<InputProps["value"]>(defaultValue);
+  const [value, setValue] = useState<InputProps["value"]>(defaultValue)
 
   const onChange = useCallback(
     (e: ChangeEvent<HTMLInputElement>) => {
       if (propsValue === undefined) {
-        setValue(e.target.value);
+        setValue(e.target.value)
       }
-      oc?.(e);
+      oc?.(e)
     },
-    [oc, propsValue]
-  );
+    [oc, propsValue],
+  )
 
   const renderInput = useCallback(
     (
       style: InputProps["style"] = {},
-      className: InputProps["className"] = ""
+      className: InputProps["className"] = "",
     ) => (
       <input
         style={style}
@@ -40,8 +40,8 @@ function Input({
         {...props}
       />
     ),
-    [props, propsValue, value, onChange, prefix]
-  );
+    [props, propsValue, value, onChange, prefix],
+  )
 
   return prefix || suffix ? (
     <span style={style} className={classNames(styles.inputWrapper, className)}>
@@ -51,11 +51,11 @@ function Input({
     </span>
   ) : (
     renderInput(style, className)
-  );
+  )
 }
 
-export default memo(Input);
+export default memo(Input)
 
 Input.defaultProps = {
   defaultValue: "",
-};
+}

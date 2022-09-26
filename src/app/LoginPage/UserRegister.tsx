@@ -1,30 +1,26 @@
-import {
-  memo,
-  useState,
-  useCallback,
-  FocusEventHandler,
-  ChangeEvent,
-} from "react";
-import { Input, Button } from "brc";
-import styles from "./css";
+import type { FocusEventHandler, ChangeEvent } from "react"
+import { memo, useState, useCallback } from "react"
+import { Input, Button } from "brc"
+import styles from "./css"
 
 interface UserRegisterProps {
-  changeBackgroundImage: FocusEventHandler<HTMLInputElement>;
+  changeBackgroundImage: FocusEventHandler<HTMLInputElement>
 }
 
 function UserRegister({ changeBackgroundImage }: UserRegisterProps) {
-  const [phone, setPhone] = useState("");
-  const [password, setPassword] = useState("");
+  const [phone, setPhone] = useState("")
+  const [password, setPassword] = useState("")
 
-  const login = useCallback(() => {}, []);
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  const login = useCallback(() => {}, [])
 
   const onPasswordChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
-    setPassword(e.target.value);
-  }, []);
+    setPassword(e.target.value)
+  }, [])
 
   const onPhoneChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
-    setPhone(e.target.value);
-  }, []);
+    setPhone(e.target.value)
+  }, [])
 
   return (
     <div>
@@ -50,7 +46,7 @@ function UserRegister({ changeBackgroundImage }: UserRegisterProps) {
         </Button>
       </div>
     </div>
-  );
+  )
 }
 
-export default memo(UserRegister);
+export default memo(UserRegister)

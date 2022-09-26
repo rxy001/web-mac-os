@@ -1,59 +1,59 @@
-import { MouseEvent } from "react";
-import { Button, Icon } from "brc";
-import { CSSProperties, useCallback, useState } from "react";
-import styles from "./css";
-import { usePreload } from "chooks";
-import classNames from "classnames";
-import UserLogin from "./UserLogin";
-import UserRegister from "./UserRegister";
+import { useCallback, useState } from "react"
+import type { MouseEvent, CSSProperties } from "react"
+import { Button, Icon } from "brc"
+import { usePreload } from "chooks"
+import classNames from "classnames"
+import styles from "./css"
+import UserLogin from "./UserLogin"
+import UserRegister from "./UserRegister"
 import {
   IMAGE_CLOSE_22,
   IMAGE_CLOSE_33,
   LOGIN_TAB_INDEX,
   REGISTER_TAB_INDEX,
-} from "./constants";
+} from "./constants"
 
-const bgImg = `url("${IMAGE_CLOSE_22}"),url("${IMAGE_CLOSE_33}")`;
+const bgImg = `url("${IMAGE_CLOSE_22}"),url("${IMAGE_CLOSE_33}")`
 
 interface BackgroundImage {
-  backgroundImage: CSSProperties["backgroundImage"];
+  backgroundImage: CSSProperties["backgroundImage"]
 }
 
 export default function LoginPage() {
   usePreload({
     image: [IMAGE_CLOSE_22, IMAGE_CLOSE_33],
-  });
+  })
 
-  const [tabIndex, setTabIndex] = useState(0);
+  const [tabIndex, setTabIndex] = useState(0)
 
   const [backgroundImage, setBackgroundImage] = useState<BackgroundImage>({
     backgroundImage: undefined,
-  });
+  })
 
   const changeBackgroundImage = useCallback(() => {
     setBackgroundImage((prev: BackgroundImage) => {
       if (!prev.backgroundImage) {
         return {
           backgroundImage: bgImg,
-        };
+        }
       }
       return {
         backgroundImage: undefined,
-      };
-    });
-  }, []);
+      }
+    })
+  }, [])
 
   const changeTabIndex = useCallback(() => {
-    setTabIndex((prev) => (prev ? LOGIN_TAB_INDEX : REGISTER_TAB_INDEX));
-  }, []);
+    setTabIndex((prev) => (prev ? LOGIN_TAB_INDEX : REGISTER_TAB_INDEX))
+  }, [])
 
   const onTabsClick = useCallback((e: MouseEvent<HTMLDivElement>) => {
-    const target = e.target as HTMLDivElement;
+    const target = e.target as HTMLDivElement
 
     if (target.tagName === "DIV" && target.tabIndex > -1) {
-      setTabIndex(target.tabIndex);
+      setTabIndex(target.tabIndex)
     }
-  }, []);
+  }, [])
 
   return (
     <div className={styles.loginPageContainer} style={backgroundImage}>
@@ -61,17 +61,17 @@ export default function LoginPage() {
         <div
           className={classNames(
             styles.title,
-            tabIndex === LOGIN_TAB_INDEX ? styles.active : ""
+            tabIndex === LOGIN_TAB_INDEX ? styles.active : "",
           )}
           tabIndex={LOGIN_TAB_INDEX}
         >
           账号登陆
         </div>
-        <span className={styles.divider}></span>
+        <span className={styles.divider} />
         <div
           className={classNames(
             styles.title,
-            tabIndex === REGISTER_TAB_INDEX ? styles.active : ""
+            tabIndex === REGISTER_TAB_INDEX ? styles.active : "",
           )}
           tabIndex={REGISTER_TAB_INDEX}
         >
@@ -100,5 +100,5 @@ export default function LoginPage() {
         </div>
       </div>
     </div>
-  );
+  )
 }

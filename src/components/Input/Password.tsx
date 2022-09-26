@@ -1,12 +1,12 @@
-import { useCallback, useState, memo } from "react";
-import Input from "./index";
-import type { PasswordProps } from "./interface";
-import { Icon } from "../index";
-import styles from "./css";
+import { useCallback, useState, memo } from "react"
+import Input from "./index"
+import type { PasswordProps } from "./interface"
+import { Icon } from "../index"
+import styles from "./css"
 
 function Password({ iconProps, ...props }: PasswordProps) {
-  const [visible, setVisible] = useState(false);
-  const onClick = useCallback(() => setVisible((v) => !v), []);
+  const [visible, setVisible] = useState(false)
+  const onClick = useCallback(() => setVisible((v) => !v), [])
 
   return (
     <Input
@@ -22,7 +22,7 @@ function Password({ iconProps, ...props }: PasswordProps) {
         />
       }
     />
-  );
+  )
 }
 
-export default memo(Password);
+export default memo(Password)

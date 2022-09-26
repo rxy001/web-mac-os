@@ -1,7 +1,7 @@
-import { includes } from "lodash";
-import { useContext, useEffect, useMemo, useRef } from "react";
-import { AliveScopeContext } from "./context";
-import type { KeepAliveProps, CacheItem } from "./interface";
+import { includes } from "lodash"
+import { useContext, useEffect, useMemo, useRef } from "react"
+import { AliveScopeContext } from "./context"
+import type { KeepAliveProps, CacheItem } from "./interface"
 
 // 当重新加载 KeepAlive.chidlren 时，children 的 fiber 居然有 current. why?
 // 这是因为 KeepAlive.chidlren 被移动到 Provider 里的 Fragment 中，因此 KeepAlive.chidlren 的 fiber
@@ -16,52 +16,48 @@ export default function KeepAlive({
   children,
   keepAlive = true,
 }: KeepAliveProps) {
-  const { nodes, setCache, keys, setKeys } = useContext(AliveScopeContext);
+  const { nodes, setCache, keys, setKeys } = useContext(AliveScopeContext)
 
-  const isMountedRef = useRef(false);
+  const isMountedRef = useRef(false)
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  const key = useMemo(() => id, []);
+  const key = useMemo(() => id, [])
 
-  const cacheItemRef = useRef<CacheItem>();
+  const cacheItemRef = useRef<CacheItem>()
 
-  const keepAliveRef = useRef<HTMLDivElement>(null);
+  const keepAliveRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     if (!includes(keys, key)) {
-      setKeys(key);
+      setKeys(key)
     }
-  }, [keys, key, setKeys]);
+  }, [keys, key, setKeys])
 
   useEffect(() => {
     cacheItemRef.current = {
       children,
       keepAlive,
       activated: true,
-    };
-    setCache(key, cacheItemRef.current);
-  }, [key, children, keepAlive, setCache, setKeys]);
+    }
+    setCache(key, cacheItemRef.current)
+  }, [key, children, keepAlive, setCache, setKeys])
 
   useEffect(() => {
     if (nodes[key] && !isMountedRef.current) {
-      keepAliveRef.current?.appendChild(nodes[key]);
-      isMountedRef.current = true;
+      keepAliveRef.current?.appendChild(nodes[key])
+      isMountedRef.current = true
     }
-  }, [nodes, key]);
+  }, [nodes, key])
 
-  console.log("alive", nodes);
+  // useEffect(
+  //   () => () => {
+  //     setCache(key, {
+  //       ...cacheItemRef.current,
+  //       activated: false,
+  //     } as CacheItem)
+  //   },
+  //   [key, setCache],
+  // )
 
-  useEffect(() => {
-    // return () => {
-    //   setCache(key, {
-    //     ...cacheItemRef.current,
-    //     activated: false,
-    //   } as CacheItem);
-    // };
-    return () => {
-      console.log("unmount");
-    };
-  }, [key, setCache]);
-
-  return <div key={key} ref={keepAliveRef} />;
+  return <div key={key} ref={keepAliveRef} />
 }

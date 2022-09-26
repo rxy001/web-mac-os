@@ -1,41 +1,35 @@
-import {
-  memo,
-  useState,
-  useCallback,
-  FocusEventHandler,
-  MouseEventHandler,
-  ChangeEvent,
-} from "react";
-import { Input, Button } from "brc";
-import request from "request";
-import styles from "./css";
+import type { FocusEventHandler, MouseEventHandler, ChangeEvent } from "react"
+import { memo, useState, useCallback } from "react"
+import { Input, Button } from "brc"
+import request from "request"
+import styles from "./css"
 
 interface UserLoginProps {
-  changeBackgroundImage: FocusEventHandler<HTMLInputElement>;
-  changeTabIndex: MouseEventHandler<HTMLButtonElement>;
+  changeBackgroundImage: FocusEventHandler<HTMLInputElement>
+  changeTabIndex: MouseEventHandler<HTMLButtonElement>
 }
 
 function UserLogin({ changeBackgroundImage, changeTabIndex }: UserLoginProps) {
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
+  const [username, setUsername] = useState("")
+  const [password, setPassword] = useState("")
 
   const onUserNameChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
-    setUsername(e.target.value);
-  }, []);
+    setUsername(e.target.value)
+  }, [])
 
   const onPasswordChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
-    setPassword(e.target.value);
-  }, []);
+    setPassword(e.target.value)
+  }, [])
 
   const login = useCallback(async () => {
     if (!username || !password) {
-      return;
+      return
     }
     await request.post("/login", {
       username,
       password,
-    });
-  }, [username, password]);
+    })
+  }, [username, password])
 
   return (
     <div>
@@ -64,7 +58,7 @@ function UserLogin({ changeBackgroundImage, changeTabIndex }: UserLoginProps) {
         </Button>
       </div>
     </div>
-  );
+  )
 }
 
-export default memo(UserLogin);
+export default memo(UserLogin)
