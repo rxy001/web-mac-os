@@ -28,7 +28,7 @@ module.exports = {
   webpack: override(
     addLessLoader(),
     addWebpackResolve({
-      extensions: [".mjs", ".js", ".ts", ".tsx", ".json", ".jsx", ".less"],
+      extensions: [".mjs", ".js", ".ts", ".tsx", ".json", ".jsx"],
     }),
     addWebpackAlias({
       brc: paths.brc,
