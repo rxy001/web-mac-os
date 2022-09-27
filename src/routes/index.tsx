@@ -7,7 +7,6 @@ const routes = [
     path: "/",
     element: <Desktop />,
 
-    // todo 暂时没用到
     children: appRoutes,
   },
   {

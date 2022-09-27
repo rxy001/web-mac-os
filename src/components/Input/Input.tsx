@@ -1,7 +1,7 @@
 import type { ChangeEvent } from "react"
 import { useState, memo, useCallback } from "react"
 import classNames from "classnames"
-import styles from "./css"
+import styles from "./css/input.less"
 import type { InputProps } from "./interface"
 
 function Input({

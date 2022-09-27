@@ -3,7 +3,7 @@ import { useAppSelector } from "chooks"
 import { forEach, map, size } from "lodash"
 import { useSpring, animated } from "@react-spring/web"
 import Icon from "../Icon"
-import styles from "./css"
+import styles from "./css/bottomBar.less"
 import { selectApps } from "../../redux/appsSlice"
 
 function BottomBarProps() {

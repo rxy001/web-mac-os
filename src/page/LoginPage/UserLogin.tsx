@@ -2,7 +2,7 @@ import type { FocusEventHandler, MouseEventHandler, ChangeEvent } from "react"
 import { memo, useState, useCallback } from "react"
 import { Input, Button } from "brc"
 import request from "request"
-import styles from "./css"
+import styles from "./css/loginPage.less"
 
 interface UserLoginProps {
   changeBackgroundImage: FocusEventHandler<HTMLInputElement>

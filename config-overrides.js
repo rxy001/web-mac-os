@@ -1,18 +1,18 @@
-const fs = require("fs");
-const path = require("path");
-const MiniCssExtractPlugin = require("mini-css-extract-plugin");
-const getCSSModuleLocalIdent = require("react-dev-utils/getCSSModuleLocalIdent");
+const fs = require("fs")
+const path = require("path")
+const MiniCssExtractPlugin = require("mini-css-extract-plugin")
+const getCSSModuleLocalIdent = require("react-dev-utils/getCSSModuleLocalIdent")
 const {
   override,
   overrideDevServer,
   addWebpackAlias,
   addWebpackResolve,
   addWebpackPlugin,
-} = require("customize-cra");
-const PreloadWebpackPlugin = require("@vue/preload-webpack-plugin");
+} = require("customize-cra")
+const PreloadWebpackPlugin = require("@vue/preload-webpack-plugin")
 
-const appDirectory = fs.realpathSync(process.cwd());
-const resolveApp = (relativePath) => path.resolve(appDirectory, relativePath);
+const appDirectory = fs.realpathSync(process.cwd())
+const resolveApp = (relativePath) => path.resolve(appDirectory, relativePath)
 
 const paths = {
   appSrc: resolveApp("src"),
@@ -22,7 +22,7 @@ const paths = {
   less: resolveApp("src/less"),
   chooks: resolveApp("src/chooks"), // custom Hooks,
   slice: resolveApp("src/redux"),
-};
+}
 
 module.exports = {
   webpack: override(
@@ -44,43 +44,43 @@ module.exports = {
         rel: "preload",
         include: "initial",
         as(entry) {
-          if (/\.css$/.test(entry)) return "style";
-          if (/\.woff$/.test(entry)) return "font";
-          if (/\.bmp$|\.gif$|\.jpe?g$|\.png$/.test(entry)) return "image";
-          return "script";
+          if (/\.css$/.test(entry)) return "style"
+          if (/\.woff$/.test(entry)) return "font"
+          if (/\.bmp$|\.gif$|\.jpe?g$|\.png$/.test(entry)) return "image"
+          return "script"
         },
-      })
-    )
+      }),
+    ),
   ),
   devServer: overrideDevServer(addServerConfig()),
-};
+}
 
 function modifyHtmlWebpackPlugin() {
   return (config) => {
-    config.plugins[0].userOptions.inject = "body";
-    return config;
-  };
+    config.plugins[0].userOptions.inject = "body"
+    return config
+  }
 }
 
 function addServerConfig() {
   return function addServerConfigImpl(config) {
     config.proxy = {
       "/api/v1": "http://localhost:3000",
-    };
-    return config;
-  };
+    }
+    return config
+  }
 }
 
 function addLessLoader() {
   return function addLessLoaderImpl(config) {
-    const lessRegex = /\.less$/;
+    const lessRegex = /\.less$/
 
-    const webpackEnv = process.env.NODE_ENV;
-    const isEnvDevelopment = webpackEnv === "development";
-    const isEnvProduction = webpackEnv === "production";
-    const shouldUseSourceMap = process.env.GENERATE_SOURCEMAP !== "false";
-    const {publicPath} = config.output;
-    const shouldUseRelativeAssetPaths = publicPath === "./";
+    const webpackEnv = process.env.NODE_ENV
+    const isEnvDevelopment = webpackEnv === "development"
+    const isEnvProduction = webpackEnv === "production"
+    const shouldUseSourceMap = process.env.GENERATE_SOURCEMAP !== "false"
+    const { publicPath } = config.output
+    const shouldUseRelativeAssetPaths = publicPath === "./"
 
     // copy from react-scripts
     const getStyleLoaders = () => {
@@ -139,20 +139,20 @@ function addLessLoader() {
             sourceMap: true,
           },
         },
-      ].filter(Boolean);
-      return loaders;
-    };
+      ].filter(Boolean)
+      return loaders
+    }
 
     const loaders = config.module.rules.find((rule) =>
-      Array.isArray(rule.oneOf)
-    ).oneOf;
+      Array.isArray(rule.oneOf),
+    ).oneOf
 
     // Insert less-loader as the penultimate item of loaders (before file-loader)
     loaders.splice(loaders.length - 1, 0, {
       test: lessRegex,
       use: getStyleLoaders(),
-    });
+    })
 
-    return config;
-  };
+    return config
+  }
 }

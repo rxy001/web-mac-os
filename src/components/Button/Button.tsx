@@ -1,6 +1,6 @@
 import { memo } from "react"
 import classNames from "classnames"
-import styles from "./css"
+import styles from "./css/button.less"
 import type { ButtonProps } from "./interface"
 
 function Button({

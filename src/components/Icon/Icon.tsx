@@ -1,7 +1,7 @@
 import classNames from "classnames"
 import { memo, useCallback, useState, useEffect } from "react"
 import type { IconProps } from "./interface"
-import styles from "./css"
+import styles from "./css/icon.less"
 
 function Icon({ onClick, className, type, mask = true, ...props }: IconProps) {
   const [maskVisible, setMaskVisible] = useState(false)
