@@ -1,6 +1,6 @@
 import classNames from "classnames"
-import { useState, useCallback, useContext, memo } from "react"
-import { useGesture } from "@use-gesture/react"
+import { useState, useContext } from "react"
+import { useMemoizedFn } from "@chooks"
 import styles from "./css/window.less"
 import { Icon } from "../index"
 import type { WindowHeaderProps } from "./interface"
@@ -9,75 +9,84 @@ import { AppContext } from "./context"
 function WindowHeader({
   title,
   className,
-  isFullscreen,
-  collapse,
-  fullscreen,
+  windowHandler,
   ...props
 }: WindowHeaderProps) {
   const { closeApp } = useContext(AppContext)
 
   const [isHover, setIsHover] = useState(false)
 
-  const dragBing = useGesture({
-    onDrag({ event }) {
-      event.stopPropagation()
-    },
-    onDragStart({ event }) {
-      event.stopPropagation()
-    },
-    onDragEnd({ event }) {
-      event.stopPropagation()
-    },
+  const onMouseOver = useMemoizedFn(() => setIsHover(true))
+
+  const onMouseOut = useMemoizedFn(() => setIsHover(false))
+
+  const fullscreen = useMemoizedFn(() => {
+    if (windowHandler.isFullscreen) {
+      windowHandler.exitFullscreen()
+    } else {
+      windowHandler.fullscreen()
+    }
   })
 
-  const onMouseOver = useCallback(() => setIsHover(true), [])
+  const expandToViewport = useMemoizedFn(() => {
+    if (windowHandler.isExpandToViewport) {
+      windowHandler.exitViewport()
+    } else {
+      windowHandler.expandToViewport()
+    }
+  })
 
-  const onMouseOut = useCallback(() => setIsHover(false), [])
-
-  const renderButtonGroup = useCallback(
-    () => (
-      <div
-        className={styles.operation}
-        onMouseOver={onMouseOver}
-        onMouseOut={onMouseOut}
-        {...dragBing()}
-      >
-        <div className={styles.closeIcon} onClick={closeApp}>
-          {isHover && <Icon type="iconclose1" className={styles.icon} />}
-        </div>
-        <div className={styles.collapseIcon} onClick={collapse}>
-          {isHover && <Icon type="iconsubtract" className={styles.icon} />}
-        </div>
-        <div className={styles.fullscreenIcon} onClick={fullscreen}>
-          {isHover && (
-            <Icon
-              type={isFullscreen ? "iconnarrow" : "iconfullscreen"}
-              className={styles.icon}
-            />
-          )}
-        </div>
+  const renderButtonGroup = useMemoizedFn(() => (
+    <div
+      className={styles.operation}
+      onMouseOver={onMouseOver}
+      onMouseOut={onMouseOut}
+    >
+      <div className={styles.closeIcon} onClick={closeApp}>
+        {isHover && (
+          <Icon
+            icon="iconclose1"
+            className={styles.icon}
+            maskClassName={styles.maskClassName}
+          />
+        )}
       </div>
-    ),
-    [
-      isHover,
-      collapse,
-      fullscreen,
-      onMouseOut,
-      onMouseOver,
-      closeApp,
-      dragBing,
-      isFullscreen,
-    ],
-  )
+      <div className={styles.collapseIcon} onClick={windowHandler.collapse}>
+        {isHover && (
+          <Icon
+            icon="iconsubtract"
+            className={styles.icon}
+            maskClassName={styles.maskClassName}
+          />
+        )}
+      </div>
+      <div className={styles.fullscreenIcon} onClick={fullscreen}>
+        {isHover && (
+          <Icon
+            icon={windowHandler.isFullscreen ? "iconnarrow" : "iconfullscreen"}
+            className={styles.icon}
+            maskClassName={styles.maskClassName}
+          />
+        )}
+      </div>
+    </div>
+  ))
 
-  return isFullscreen ? (
+  return windowHandler.isFullscreen ? (
     renderButtonGroup()
   ) : (
-    <div className={classNames(styles.header)} {...props}>
-      <span className={classNames(styles.title, className)}>{title}</span>
+    <div className={classNames(styles.header)}>
+      <span
+        {...props}
+        onDoubleClick={expandToViewport}
+        className={classNames(styles.title, className)}
+      >
+        {title}
+      </span>
       {renderButtonGroup()}
     </div>
   )
 }
 
-export default memo(WindowHeader)
+// 不需要 memo， windowHandler 引用不会变，可能会获取不到最新的状态值
+export default WindowHeader

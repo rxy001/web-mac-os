@@ -1,7 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit"
 import type { PayloadAction } from "@reduxjs/toolkit"
 import { omit } from "lodash"
-import type { WindowHandler, ShortcutProps } from "brc"
+import type { WindowHandler, ShortcutProps } from "@brc"
 import type { RootState } from "./index"
 
 type Key = string

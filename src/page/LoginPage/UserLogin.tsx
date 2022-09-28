@@ -1,7 +1,8 @@
 import type { FocusEventHandler, MouseEventHandler, ChangeEvent } from "react"
-import { memo, useState, useCallback } from "react"
-import { Input, Button } from "brc"
-import request from "request"
+import { memo, useState } from "react"
+import { useMemoizedFn } from "@chooks"
+import { Input, Button } from "@brc"
+import request from "@request"
 import styles from "./css/loginPage.less"
 
 interface UserLoginProps {
@@ -13,15 +14,15 @@ function UserLogin({ changeBackgroundImage, changeTabIndex }: UserLoginProps) {
   const [username, setUsername] = useState("")
   const [password, setPassword] = useState("")
 
-  const onUserNameChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
+  const onUserNameChange = useMemoizedFn((e: ChangeEvent<HTMLInputElement>) => {
     setUsername(e.target.value)
-  }, [])
+  })
 
-  const onPasswordChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
+  const onPasswordChange = useMemoizedFn((e: ChangeEvent<HTMLInputElement>) => {
     setPassword(e.target.value)
-  }, [])
+  })
 
-  const login = useCallback(async () => {
+  const login = useMemoizedFn(async () => {
     if (!username || !password) {
       return
     }
@@ -29,7 +30,7 @@ function UserLogin({ changeBackgroundImage, changeTabIndex }: UserLoginProps) {
       username,
       password,
     })
-  }, [username, password])
+  })
 
   return (
     <div>

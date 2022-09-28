@@ -22,6 +22,7 @@ const paths = {
   less: resolveApp("src/less"),
   chooks: resolveApp("src/chooks"), // custom Hooks,
   slice: resolveApp("src/redux"),
+  constants: resolveApp("src/constants"),
 }
 
 module.exports = {
@@ -31,12 +32,14 @@ module.exports = {
       extensions: [".mjs", ".js", ".ts", ".tsx", ".json", ".jsx"],
     }),
     addWebpackAlias({
-      brc: paths.brc,
-      utils: paths.utils,
-      request: paths.axios,
-      less: paths.less,
-      chooks: paths.chooks,
-      slice: paths.slice,
+      "@src": paths.appSrc,
+      "@brc": paths.brc,
+      "@utils": paths.utils,
+      "@request": paths.axios,
+      "@less": paths.less,
+      "@chooks": paths.chooks,
+      "@slice": paths.slice,
+      "@constants": paths.constants,
     }),
     modifyHtmlWebpackPlugin(),
     addWebpackPlugin(

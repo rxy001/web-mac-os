@@ -2,36 +2,59 @@ import classNames from "classnames"
 import type { ForwardedRef } from "react"
 import {
   useState,
-  useCallback,
   useRef,
   memo,
   forwardRef,
   useImperativeHandle,
   useMemo,
-  useEffect,
 } from "react"
-import { useRnd, useClientSize, useUpdateEffect, useCustomState } from "chooks"
+import {
+  useRnd,
+  useClientSize,
+  useUpdateEffect,
+  useMemoizedFn,
+  useSetState,
+  useMount,
+  useUnmount,
+} from "@chooks"
+import type { RndStyle } from "@chooks"
 import { createPortal } from "react-dom"
 import { animated } from "@react-spring/web"
+import { DOCK } from "@constants"
 import styles from "./css/window.less"
 import type { WindowProps, WindowHandler } from "./interface"
 import WindowHeader from "./WindowHeader"
 import windowZIndex from "./windowZIndex"
+import BeforeState from "./BeforeState"
+import type { PreState } from "./BeforeState"
+import {
+  INITIAL_WIDTH,
+  INITIAL_HEIGHT,
+  HEADER_HEIGHT,
+  INITIAL_Y,
+  INITIAL_X,
+  COLLAPSE_DURATION,
+  FULLSCREEN_DURATION,
+} from "./constants"
 
-const INITIAL_WIDTH = 600
-const INITIAL_HEIGHT = 300
-const HEADER_HEIGHT = 34
-
-const INITIAL_Y = document.body.clientHeight / 2 - INITIAL_HEIGHT / 2
-const INITIAL_X = document.body.clientWidth / 2 - INITIAL_WIDTH / 2
+const { DOCK_HEIGHT } = DOCK
 
 let Z_INDEX = 0
+
+const transformRndStyle = (rndStyle: RndStyle) => ({
+  x: rndStyle.x.get(),
+  y: rndStyle.y.get(),
+  width: rndStyle.width.get(),
+  height: rndStyle.height.get(),
+})
 
 function Window(
   {
     id,
     title,
     children,
+    defaultSize,
+    defaultPosition,
     onOpened,
     onClosed,
     onFullscreen,
@@ -41,15 +64,20 @@ function Window(
   }: WindowProps,
   ref?: ForwardedRef<WindowHandler>,
 ) {
-  const [isFullscreen, setIsFullscreen] = useCustomState(false)
+  const [isFullscreen, setIsFullscreen] = useSetState(false)
 
-  const [activated, setActivated] = useCustomState(true)
+  const [activated, setActivated] = useSetState(true)
+
+  const [isExpandToViewport, setIsExpandToViewport] = useState(false)
 
   const [clientWidth, clientHeight] = useClientSize()
 
   const [rndStyle, dragBind, resizeBind, api] = useRnd({
-    defaultSize: { width: INITIAL_WIDTH, height: INITIAL_HEIGHT },
-    defaultPosition: {
+    defaultSize: defaultSize ?? {
+      width: INITIAL_WIDTH,
+      height: INITIAL_HEIGHT,
+    },
+    defaultPosition: defaultPosition ?? {
       x: INITIAL_X,
       y: INITIAL_Y,
     },
@@ -58,6 +86,14 @@ function Window(
       top: 0,
       bottom: window.innerHeight - HEADER_HEIGHT,
     }),
+    onDrag({ event }) {
+      event.stopPropagation()
+      setIsExpandToViewport(false)
+    },
+
+    onResize: () => {
+      setIsExpandToViewport(false)
+    },
   })
 
   const zIndex = useMemo(() => windowZIndex.set(id, (Z_INDEX += 1)), [id])
@@ -72,26 +108,15 @@ function Window(
     [rndStyle, style],
   )
 
-  const windowHandler = useRef<WindowHandler>({} as any)
-
   const prevIsFullscreen = useRef(false)
 
-  const prevRndStyle = useRef({
-    store: {},
-    set() {
-      this.store = {
-        x: rndStyle.x.get(),
-        y: rndStyle.y.get(),
-        width: rndStyle.width.get(),
-        height: rndStyle.height.get(),
-      }
-    },
-    get() {
-      return this.store
-    },
-  })
+  const fullscreenBeforeStateRef = useRef(new BeforeState())
 
-  const setZIndex = useCallback(() => {
+  const expandToViewportBeforeStateRef = useRef(new BeforeState())
+
+  const collapseBeforeStateRef = useRef(new BeforeState())
+
+  const setZIndex = useMemoizedFn(() => {
     const maxZIndex = windowZIndex.maxZIndex()
 
     if (windowZIndex.get(id) < maxZIndex) {
@@ -100,109 +125,128 @@ function Window(
         zIndex: windowZIndex.set(id, (Z_INDEX += 1)),
       }))
     }
-  }, [id])
+  })
 
-  const setDisplay = useCallback((display: "none" | "block") => {
-    setStyle((prev) => ({
-      ...prev,
-      display,
-    }))
-  }, [])
-
-  const collapse = useCallback(() => {
-    if (activated) {
-      if (!isFullscreen) {
-        prevRndStyle.current.set()
+  const setDisplay = useMemoizedFn((display: "none" | "block") => {
+    setStyle((prev) => {
+      if (prev.display === display) {
+        return prev
       }
-      api.start({
-        width: 0,
-        height: 0,
-        x: clientWidth / 2,
-        y: clientHeight - 50,
-        config: {
-          duration: 100,
-        },
-        onRest: () => {
-          setDisplay("none")
-        },
-      })
-      setActivated(false, onCollapsed)
-    }
-  }, [
-    isFullscreen,
-    activated,
-    setActivated,
-    api,
-    clientHeight,
-    setDisplay,
-    clientWidth,
-    onCollapsed,
-  ])
+      return {
+        ...prev,
+        display,
+      }
+    })
+  })
 
-  const fullscreen = useCallback(() => {
+  const restore = useMemoizedFn((state: PreState, onStart?: () => void) => {
+    const { x, y, width, height, duration } = state
+    api.start({
+      x,
+      y,
+      width,
+      height,
+      config: {
+        duration,
+      },
+      onStart,
+    })
+  })
+
+  const fullscreen = useMemoizedFn(() => {
     if (!isFullscreen) {
-      prevRndStyle.current.set()
+      fullscreenBeforeStateRef.current.set({
+        ...transformRndStyle(rndStyle),
+        duration: FULLSCREEN_DURATION,
+      })
       api.start({
         width: clientWidth,
         height: clientHeight,
         x: 0,
         y: 0,
         config: {
-          duration: 200,
+          duration: FULLSCREEN_DURATION,
         },
       })
       setIsFullscreen(true, onFullscreen)
-    } else {
-      api.start(prevRndStyle.current.get())
+    }
+  })
+
+  const exitFullscreen = useMemoizedFn(() => {
+    if (isFullscreen) {
+      restore(fullscreenBeforeStateRef.current.get())
       setIsFullscreen(false, onExitedFullscreen)
     }
-  }, [
-    api,
-    isFullscreen,
-    clientWidth,
-    clientHeight,
-    onFullscreen,
-    setIsFullscreen,
-    onExitedFullscreen,
-  ])
+  })
 
-  const expand = useCallback(() => {
-    if (!activated) {
-      let springStyle = prevRndStyle.current.get()
-      if (isFullscreen) {
-        springStyle = {
-          width: clientWidth,
-          height: clientHeight,
-          x: 0,
-          y: 0,
-        }
-      }
+  const expandToViewport = useMemoizedFn(() => {
+    if (!isExpandToViewport) {
+      expandToViewportBeforeStateRef.current.set({
+        ...transformRndStyle(rndStyle),
+        duration: FULLSCREEN_DURATION,
+      })
       api.start({
-        ...springStyle,
-        onStart: () => {
-          setDisplay("block")
+        width: clientWidth,
+        height: clientHeight - DOCK_HEIGHT,
+        x: 0,
+        y: 0,
+        config: {
+          duration: FULLSCREEN_DURATION,
         },
       })
+      setIsExpandToViewport(true)
+    }
+  })
+
+  const exitViewport = useMemoizedFn(() => {
+    if (isExpandToViewport) {
+      restore(expandToViewportBeforeStateRef.current.get())
+      setIsExpandToViewport(false)
+    }
+  })
+
+  const collapse = useMemoizedFn(() => {
+    if (activated) {
+      collapseBeforeStateRef.current.set({
+        ...transformRndStyle(rndStyle),
+        duration: COLLAPSE_DURATION,
+      })
+      api.start({
+        width: 0,
+        height: 0,
+        x: clientWidth / 2,
+        y: clientHeight - DOCK_HEIGHT,
+        config: {
+          duration: COLLAPSE_DURATION,
+        },
+      })
+      setActivated(false, onCollapsed)
+    }
+  })
+
+  const expand = useMemoizedFn(() => {
+    if (!activated) {
+      restore(collapseBeforeStateRef.current.get(), () => setDisplay("block"))
       setActivated(true, onExpanded)
       setZIndex()
     }
-  }, [
-    api,
-    clientWidth,
-    clientHeight,
+  })
+
+  const windowHandler = useRef<WindowHandler>({
     activated,
     isFullscreen,
-    setActivated,
-    setZIndex,
-    setDisplay,
-    onExpanded,
-  ])
+    isExpandToViewport,
+    collapse,
+    expand,
+    fullscreen,
+    exitFullscreen,
+    expandToViewport,
+    exitViewport,
+  })
 
-  windowHandler.current.collapse = collapse
-  windowHandler.current.expand = expand
-  windowHandler.current.fullscreen = fullscreen
   windowHandler.current.activated = activated
   windowHandler.current.isFullscreen = isFullscreen
+  windowHandler.current.isExpandToViewport = isExpandToViewport
 
   useImperativeHandle(ref, () => windowHandler.current, [])
 
@@ -217,30 +261,28 @@ function Window(
     prevIsFullscreen.current = isFullscreen
   }, [isFullscreen, clientWidth, clientHeight])
 
-  useEffect(() => {
+  useMount(() => {
     onOpened?.()
-    return () => {
-      onClosed?.()
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  })
+
+  useUnmount(() => {
+    onClosed?.()
+  })
 
   return createPortal(
     <div key={id}>
       <animated.div
-        {...resizeBind()}
         style={mergedStyle}
         onMouseDown={setZIndex}
         className={classNames(
           styles.window,
           isFullscreen ? styles.fullscreen : "",
         )}
+        {...resizeBind()}
       >
         <WindowHeader
           title={title}
-          isFullscreen={isFullscreen}
-          fullscreen={fullscreen}
-          collapse={collapse}
+          windowHandler={windowHandler.current}
           {...dragBind()}
         />
         {children}

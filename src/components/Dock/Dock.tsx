@@ -1,12 +1,22 @@
 import { memo, useEffect, useMemo, useState, useRef } from "react"
-import { useAppSelector } from "chooks"
+import { useAppSelector } from "@chooks"
 import { forEach, map, size } from "lodash"
 import { useSpring, animated } from "@react-spring/web"
+import { DOCK } from "@constants"
+import { selectApps } from "@slice/appsSlice"
 import Icon from "../Icon"
-import styles from "./css/bottomBar.less"
-import { selectApps } from "../../redux/appsSlice"
+import styles from "./css/dock.less"
 
-function BottomBarProps() {
+const { ICON_SIZE, ICON_WRAPPER_WIDTH } = DOCK
+
+const iconStyle = {
+  width: ICON_SIZE,
+  height: ICON_SIZE,
+}
+
+const iconWrapperStyle = { width: ICON_WRAPPER_WIDTH }
+
+function Dock() {
   const runningApps = useAppSelector(selectApps)
   const prevAppCountRef = useRef(0)
 
@@ -20,7 +30,7 @@ function BottomBarProps() {
   })
 
   const mergedStyle = useMemo(
-    () => ({ ...springStyle, ...padding }),
+    () => ({ height: DOCK.DOCK_HEIGHT, ...springStyle, ...padding }),
     [springStyle, padding],
   )
 
@@ -48,18 +58,18 @@ function BottomBarProps() {
     const length = size(runningApps)
 
     if (prevAppCountRef.current !== length) {
-      if (length > 1) {
+      if (length > 0) {
         setPadding({
-          padding: "0 5px",
+          padding: `0 ${(ICON_WRAPPER_WIDTH - ICON_SIZE) / 2}px`,
         })
-      } else if (length === 1) {
+      } else if (!length) {
         setPadding({
           padding: "0",
         })
       }
 
       api.start({
-        width: 45 * length,
+        width: ICON_WRAPPER_WIDTH * length,
         config: {
           duration: 100,
         },
@@ -69,14 +79,20 @@ function BottomBarProps() {
   }, [runningApps, api])
 
   return (
-    <animated.div style={mergedStyle} className={styles.bottomBarWrapper}>
-      {map(runningApps, ({ iconType, expand, id }) => (
-        <div key={id} className={styles.iconWrapper}>
-          <Icon onClick={expand} className={styles.icon} type={iconType} />
+    <animated.div style={mergedStyle} className={styles.dockWrapper}>
+      {map(runningApps, ({ icon, expand, id }) => (
+        <div key={id} style={iconWrapperStyle} className={styles.iconWrapper}>
+          <Icon
+            image
+            style={iconStyle}
+            onClick={expand}
+            className={styles.icon}
+            icon={icon}
+          />
         </div>
       ))}
     </animated.div>
   )
 }
 
-export default memo(BottomBarProps)
+export default memo(Dock)

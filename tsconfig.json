@@ -16,13 +16,15 @@
     "isolatedModules": true,
     "noEmit": true,
     "jsx": "react-jsx",
-    "baseUrl": "./",
+    "baseUrl": ".",
     "paths": {
-      "brc": ["src/components"],
-      "utils": ["src/utils"],
-      "request": ["src/axios"],
-      "chooks": ["src/chooks"],
-      "slice": ["src/redux"]
+      "@brc": ["src/components"],
+      "@less": ["src/less"],
+      "@utils": ["src/utils"],
+      "@request": ["src/axios"],
+      "@chooks": ["src/chooks"],
+      "@slice/*": ["src/redux/*"],
+      "@constants": ["src/constants"]
     }
   },
   "include": ["src"],

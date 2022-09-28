@@ -17,7 +17,7 @@ function Password({ iconProps, ...props }: PasswordProps) {
           mask={false}
           className={styles.passwordIcon}
           onClick={onClick}
-          type={visible ? "iconeye_protection" : "iconvisible"}
+          icon={visible ? "iconeye_protection" : "iconvisible"}
           {...iconProps}
         />
       }

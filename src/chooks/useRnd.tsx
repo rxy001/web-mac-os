@@ -1,10 +1,10 @@
+import { useGesture } from "@use-gesture/react"
 import type {
   UserHandlers,
   CoordinatesConfig,
   Vector2,
   Handler,
 } from "@use-gesture/react"
-import { useGesture } from "@use-gesture/react"
 import { useCallback, useEffect, useRef } from "react"
 import { floor, forEach, min } from "lodash"
 import type { SpringValues, SpringRef } from "@react-spring/web"
@@ -22,6 +22,9 @@ export interface Size {
   height: number
 }
 
+export type RndStyle = SpringValues<Position & Size>
+
+export type RndBind = (...args: any[]) => ReactDOMAttributes
 export interface UseRndOptions {
   // drag options
   defaultPosition?: Position
@@ -76,15 +79,15 @@ const useRnd = ({
     y: 0,
   },
 }: UseRndOptions = {}): [
-  SpringValues<Position & Size>,
-  (...args: any[]) => ReactDOMAttributes,
-  (...args: any[]) => ReactDOMAttributes,
+  RndStyle,
+  RndBind,
+  RndBind,
   SpringRef<Position & Size>,
 ] => {
   const resizeBorderRef = useRef<HTMLElement | null>(null)
   const resizeContainerRef = useRef<HTMLElement | null>(null)
 
-  const [style, api] = useSpring<Position & Size>(() => ({
+  const [style, api] = useSpring<RndStyle>(() => ({
     ...defaultPosition,
     ...defaultSize,
   }))
@@ -97,12 +100,11 @@ const useRnd = ({
           onDragStart?.(...rest)
         }
       },
-      onDrag({ down, event, offset, ...rest }) {
-        if (!disableDragging) {
-          event.stopPropagation()
+      onDrag({ event, offset, dragging, ...rest }) {
+        if (!disableDragging && dragging) {
           const [x, y] = offset
-          api.start({ x, y, immediate: down })
-          onDrag?.({ down, offset, event, ...rest })
+          api.start({ x, y, immediate: true })
+          onDrag?.({ dragging, offset, event, ...rest })
         }
       },
       onDragEnd(...rest) {
@@ -117,6 +119,7 @@ const useRnd = ({
         bounds,
         transform: gestureTransform,
         from: () => [style.x.get(), style.y.get()],
+        filterTaps: true,
       },
     },
   )
@@ -251,23 +254,14 @@ const useRnd = ({
         }
       },
 
-      onDrag({ down, ...restArgu }) {
-        if (enableResizing) {
-          const props = generateSpringProps({ down, ...restArgu })
-          onResize?.({ down, ...restArgu })
-          if (!down) {
-            api.start({
-              ...props,
-              immediate: down,
-              cancel: true,
-            })
-            return
-          }
-
+      onDrag({ dragging, ...restArgu }) {
+        if (enableResizing && dragging) {
+          const props = generateSpringProps({ dragging, ...restArgu })
           api.start({
             ...props,
-            immediate: down,
+            immediate: true,
           })
+          onResize?.({ dragging, ...restArgu })
         }
       },
       onDragEnd(...rest) {
@@ -280,6 +274,7 @@ const useRnd = ({
       drag: {
         from: () => [style.x.get(), style.y.get()],
         transform: gestureTransform,
+        filterTaps: true,
       },
     },
   )

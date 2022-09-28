@@ -30,7 +30,7 @@
     "eject": "react-scripts eject",
     "lint:script": "eslint . --ext .js,.jsx,.ts,.tsx --max-warnings=0",
     "lint:style": "stylelint 'src/**/*.less'",
-    "prettier": "prettier -c --write **/*",
+    "prettier": "prettier -c --write src",
     "precommit": "npm run lint:script && npm run lint:style && npm run prettier"
   },
   "browserslist": {
@@ -47,7 +47,9 @@
   },
   "lint-staged": {
     "src/*.{js,jsx,ts,tsx}": [
-      "npm run precommit"
+      "npm run lint:script",
+      "npm run lint:style",
+      "npm run prettier"
     ]
   },
   "devDependencies": {

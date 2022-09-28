@@ -1,4 +1,4 @@
-import { asyncLoadComponent } from "utils"
+import { asyncLoadComponent } from "@utils"
 
 const appRoutes = [
   {

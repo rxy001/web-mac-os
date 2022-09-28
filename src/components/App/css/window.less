@@ -1,4 +1,4 @@
-@import "~less/mixins";
+@import "~@less/mixins";
 
 .fullscreen {
   border-radius: 0 !important;
@@ -25,7 +25,6 @@
     background-color: #dfe1e5;
     box-shadow: 0 2px #0000001f;
     display: flex;
-    touch-action: none;
 
     .title {
       min-width: 300px;
@@ -34,6 +33,7 @@
       display: flex;
       justify-content: center;
       align-items: center;
+      touch-action: none;
     }
   }
 }
@@ -45,6 +45,10 @@
   top: 10px;
   left: 10px;
   touch-action: none;
+
+  .maskClassName {
+    border-radius: 15px;
+  }
 
   .closeIcon {
     margin-right: 8px;

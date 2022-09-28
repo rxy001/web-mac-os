@@ -1,33 +1,44 @@
 import classNames from "classnames"
-import { memo, useCallback, useState, useEffect } from "react"
+import { memo, useState, useEffect } from "react"
+import { useMemoizedFn } from "@chooks"
 import type { IconProps } from "./interface"
 import styles from "./css/icon.less"
 
-function Icon({ onClick, className, type, mask = true, ...props }: IconProps) {
+function Icon({
+  image,
+  icon,
+  style,
+  onClick,
+  className,
+  maskStyle,
+  maskClassName,
+  mask = true,
+  ...props
+}: IconProps) {
   const [maskVisible, setMaskVisible] = useState(false)
   const [isPress, setIsPress] = useState(false)
 
-  const onMouseDown = useCallback(() => {
+  const onMouseDown = useMemoizedFn(() => {
     if (mask) {
       setIsPress(true)
       setMaskVisible(true)
     }
-  }, [mask])
+  })
 
-  const onMouseUp = useCallback(() => {
+  const onMouseUp = useMemoizedFn(() => {
     if (mask) {
       setIsPress(false)
       setMaskVisible(false)
     }
-  }, [mask])
+  })
 
-  const onMouseLeave = useCallback(() => {
+  const onMouseLeave = useMemoizedFn(() => {
     mask && isPress && setMaskVisible(false)
-  }, [mask, isPress])
+  })
 
-  const onMouseEnter = useCallback(() => {
+  const onMouseEnter = useMemoizedFn(() => {
     mask && isPress && setMaskVisible(true)
-  }, [mask, isPress])
+  })
 
   useEffect(() => {
     if (mask) {
@@ -38,6 +49,7 @@ function Icon({ onClick, className, type, mask = true, ...props }: IconProps) {
 
   return (
     <span
+      style={style}
       className={classNames(styles.iconWrapper, className)}
       onClick={onClick}
       onMouseDown={onMouseDown}
@@ -46,10 +58,19 @@ function Icon({ onClick, className, type, mask = true, ...props }: IconProps) {
       onMouseEnter={onMouseEnter}
       {...props}
     >
-      <svg aria-hidden="true" className={classNames(styles.icon, "icon")}>
-        <use xlinkHref={`#${type}`} />
-      </svg>
-      {mask && <div className={maskVisible ? styles.mask : ""} />}
+      {image ? (
+        <img src={icon} alt="img" className={classNames(styles.icon, "icon")} />
+      ) : (
+        <svg aria-hidden="true" className={classNames(styles.icon, "icon")}>
+          <use xlinkHref={`#${icon}`} />
+        </svg>
+      )}
+      {mask && (
+        <div
+          style={maskStyle}
+          className={classNames(maskVisible ? styles.mask : "", maskClassName)}
+        />
+      )}
     </span>
   )
 }

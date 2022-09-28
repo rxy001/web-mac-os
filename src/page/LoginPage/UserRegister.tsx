@@ -1,6 +1,6 @@
 import type { FocusEventHandler, ChangeEvent } from "react"
 import { memo, useState, useCallback } from "react"
-import { Input, Button } from "brc"
+import { Input, Button } from "@brc"
 import styles from "./css/loginPage.less"
 
 interface UserRegisterProps {

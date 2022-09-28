@@ -31,9 +31,7 @@
 
     // 解决 typescript alias 的问题
     "import/resolver": {
-      "typescript": {
-        "alwaysTryTypes": true
-      }
+      "typescript": {}
     }
   },
   "root": true, // For configuration cascading.

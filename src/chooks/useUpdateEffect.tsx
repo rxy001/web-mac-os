@@ -1,17 +1,20 @@
 import type { EffectCallback, DependencyList } from "react"
 import { useEffect, useRef } from "react"
+import useLatest from "./useLatest"
 
 export default function useUpdateEffect(
   effect: EffectCallback,
   deps?: DependencyList,
 ) {
-  const isMounted = useRef(false)
+  const isMountedRef = useRef(false)
+
+  const effectRef = useLatest(effect)
 
   useEffect(() => {
-    if (isMounted.current) {
-      return effect()
+    if (isMountedRef.current) {
+      return effectRef.current()
     }
-    isMounted.current = true
+    isMountedRef.current = true
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, deps)

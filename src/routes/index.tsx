@@ -1,6 +1,6 @@
-import { asyncLoadComponent } from "utils"
+import { asyncLoadComponent } from "@utils"
 import appRoutes from "./app"
-import Desktop from "../app/Desktop"
+import Desktop from "../page/Desktop"
 
 const routes = [
   {

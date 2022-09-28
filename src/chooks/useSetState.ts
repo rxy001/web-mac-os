@@ -7,28 +7,29 @@ import {
   useEffect,
 } from "react"
 
-type Effect = () => void
+type Callback = () => void
 
-type Dispatch<A> = (value: A, effect?: Effect) => void
+type Dispatch<A> = (value: A, Callback?: Callback) => void
 
-export default function useCustomState<S>(
+// setState，可在更新之后执行 callback
+export default function useSetState<S>(
   initialState: S | (() => S),
 ): [S, Dispatch<SetStateAction<S>>] {
   const [state, dispatch] = useState(initialState)
-  const effectRef = useRef<Effect | undefined>()
+  const callbackRef = useRef<Callback | undefined>()
 
-  const setState = useCallback((s: any, effect?: Effect) => {
+  const setState = useCallback((s: any, callback?: Callback) => {
     dispatch(s)
-    effectRef.current = effect
+    callbackRef.current = callback
   }, [])
 
   useLayoutEffect(() => {
-    effectRef.current?.()
+    callbackRef.current?.()
   }, [state])
 
   useEffect(
     () => () => {
-      effectRef.current = undefined
+      callbackRef.current = undefined
     },
     [],
   )

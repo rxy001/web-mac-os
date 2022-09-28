@@ -1,5 +1,6 @@
 import type { ChangeEvent } from "react"
-import { useState, memo, useCallback } from "react"
+import { useState, memo } from "react"
+import { useMemoizedFn } from "@chooks"
 import classNames from "classnames"
 import styles from "./css/input.less"
 import type { InputProps } from "./interface"
@@ -16,17 +17,14 @@ function Input({
 }: InputProps) {
   const [value, setValue] = useState<InputProps["value"]>(defaultValue)
 
-  const onChange = useCallback(
-    (e: ChangeEvent<HTMLInputElement>) => {
-      if (propsValue === undefined) {
-        setValue(e.target.value)
-      }
-      oc?.(e)
-    },
-    [oc, propsValue],
-  )
+  const onChange = useMemoizedFn((e: ChangeEvent<HTMLInputElement>) => {
+    if (propsValue === undefined) {
+      setValue(e.target.value)
+    }
+    oc?.(e)
+  })
 
-  const renderInput = useCallback(
+  const renderInput = useMemoizedFn(
     (
       style: InputProps["style"] = {},
       className: InputProps["className"] = "",
@@ -40,7 +38,6 @@ function Input({
         {...props}
       />
     ),
-    [props, propsValue, value, onChange, prefix],
   )
 
   return prefix || suffix ? (

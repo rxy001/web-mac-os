@@ -1,7 +1,7 @@
-import { memo, useCallback, useMemo, useRef, useState } from "react"
-import { asyncLoadComponent } from "utils"
+import { memo, useMemo, useRef, useState } from "react"
+import { asyncLoadComponent } from "@utils"
 import { connect } from "react-redux"
-import { useAppDispatch } from "chooks"
+import { useAppDispatch, useMemoizedFn } from "@chooks"
 import shortid from "shortid"
 import Shortcut from "./Shortcut"
 import Window from "./Window"
@@ -9,14 +9,24 @@ import { push, remove } from "../../redux/appsSlice"
 import { AppContext } from "./context"
 import type { AppProps, AppContextProps, WindowHandler } from "./interface"
 
-function App({ element, title, iconType }: AppProps) {
+function App({
+  element,
+  title,
+  icon,
+  defaultSize,
+  defaultPosition,
+  onOpened: propsOnOpened,
+  onClosed: propsOnClosed,
+  onFullscreen: propsOnFullscreen,
+  onCollapsed: propsOnCollapsed,
+  onExpanded: propsOnExpanded,
+  onExitedFullscreen: propsOnExitedFullscreen,
+}: AppProps) {
   const dispatch = useAppDispatch()
 
   const id = useMemo(() => shortid.generate(), [])
 
   const [visible, setVisible] = useState(false)
-
-  const methods = useRef<AppContextProps>({} as any)
 
   const windowRef = useRef<WindowHandler>(null as any)
 
@@ -27,7 +37,7 @@ function App({ element, title, iconType }: AppProps) {
     return element
   }, [element])
 
-  const pushAppToStore = useCallback(() => {
+  const pushAppToStore = useMemoizedFn(() => {
     dispatch({
       type: push.type,
       payload: {
@@ -35,64 +45,72 @@ function App({ element, title, iconType }: AppProps) {
         app: {
           id,
           title,
-          iconType,
+          icon,
           ...windowRef.current,
         },
       },
     })
-  }, [id, title, iconType, dispatch])
+  })
 
-  const openApp = useCallback(() => {
+  const openApp = useMemoizedFn(() => {
     if (windowRef.current?.activated === false) {
       windowRef.current.expand()
+    } else if (!windowRef.current) {
+      setVisible(true)
     }
-    setVisible(true)
-  }, [])
+  })
 
-  const closeApp = useCallback(() => {
+  const closeApp = useMemoizedFn(() => {
     setVisible(false)
-  }, [])
+  })
 
-  const onOpened = useCallback(() => {
+  const onOpened = useMemoizedFn(() => {
     pushAppToStore()
-  }, [pushAppToStore])
+    propsOnOpened?.()
+  })
 
-  const onFullscreen = useCallback(() => {
+  const onFullscreen = useMemoizedFn(() => {
     pushAppToStore()
-  }, [pushAppToStore])
+    propsOnFullscreen?.()
+  })
 
-  const onExitedFullscreen = useCallback(() => {
+  const onExitedFullscreen = useMemoizedFn(() => {
     pushAppToStore()
-  }, [pushAppToStore])
+    propsOnExitedFullscreen?.()
+  })
 
-  const onCollapsed = useCallback(() => {
+  const onCollapsed = useMemoizedFn(() => {
     pushAppToStore()
-  }, [pushAppToStore])
+    propsOnCollapsed?.()
+  })
 
-  const onExpanded = useCallback(() => {
+  const onExpanded = useMemoizedFn(() => {
     pushAppToStore()
-  }, [pushAppToStore])
+    propsOnExpanded?.()
+  })
 
-  const onClosed = useCallback(() => {
+  const onClosed = useMemoizedFn(() => {
     dispatch({
       type: remove.type,
       payload: {
         key: id,
       },
     })
-  }, [id, dispatch])
+    propsOnClosed?.()
+  })
 
-  methods.current.openApp = openApp
-  methods.current.closeApp = closeApp
+  const methods = useRef<AppContextProps>({ openApp, closeApp })
 
   return (
     <AppContext.Provider value={methods.current}>
-      <Shortcut iconType={iconType} title={title} />
+      <Shortcut icon={icon} title={title} />
       {visible && (
         <Window
           id={id}
           ref={windowRef}
           title={title}
+          defaultSize={defaultSize}
+          defaultPosition={defaultPosition}
           onOpened={onOpened}
           onClosed={onClosed}
           onFullscreen={onFullscreen}

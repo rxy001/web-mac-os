@@ -1,7 +1,7 @@
 import { useCallback, useState } from "react"
 import type { MouseEvent, CSSProperties } from "react"
-import { Button, Icon } from "brc"
-import { usePreload } from "chooks"
+import { Button, Icon } from "@brc"
+import { usePreload } from "@chooks"
 import classNames from "classnames"
 import UserLogin from "./UserLogin"
 import UserRegister from "./UserRegister"
@@ -93,7 +93,7 @@ export default function LoginPage() {
           <Button
             type="text"
             className={styles.button}
-            icon={<Icon type="icongithub" />}
+            icon={<Icon icon="icongithub" />}
           >
             github
           </Button>

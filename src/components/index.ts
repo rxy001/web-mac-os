@@ -12,5 +12,5 @@ export type { AppProps, WindowHandler, WindowProps, ShortcutProps } from "./App"
 
 export { KeepAlive, AliveScope } from "./KeepAlive"
 
-export { default as BottomBar } from "./BottomBar"
-export type { BottomBarProps } from "./BottomBar"
+export { default as Dock } from "./Dock"
+export type { DockProps } from "./Dock"
