@@ -22,7 +22,9 @@ export interface Size {
   height: number
 }
 
-export type RndStyle = SpringValues<Position & Size>
+type Style = Position & Size & { opacity?: number }
+
+export type RndStyle = SpringValues<Style>
 
 export type RndBind = (...args: any[]) => ReactDOMAttributes
 export interface UseRndOptions {
@@ -78,18 +80,14 @@ const useRnd = ({
     x: 0,
     y: 0,
   },
-}: UseRndOptions = {}): [
-  RndStyle,
-  RndBind,
-  RndBind,
-  SpringRef<Position & Size>,
-] => {
+}: UseRndOptions = {}): [RndStyle, RndBind, RndBind, SpringRef<Style>] => {
   const resizeBorderRef = useRef<HTMLElement | null>(null)
   const resizeContainerRef = useRef<HTMLElement | null>(null)
 
-  const [style, api] = useSpring<RndStyle>(() => ({
+  const [style, api] = useSpring<Style>(() => ({
     ...defaultPosition,
     ...defaultSize,
+    opacity: 1,
   }))
 
   const dragBind = useGesture(

@@ -28,11 +28,11 @@ function WindowHeader({
     }
   })
 
-  const expandToViewport = useMemoizedFn(() => {
-    if (windowHandler.isExpandToViewport) {
-      windowHandler.exitViewport()
+  const maximize = useMemoizedFn(() => {
+    if (windowHandler.isMaximized) {
+      windowHandler.exitMaximize()
     } else {
-      windowHandler.expandToViewport()
+      windowHandler.maximize()
     }
   })
 
@@ -51,7 +51,7 @@ function WindowHeader({
           />
         )}
       </div>
-      <div className={styles.collapseIcon} onClick={windowHandler.collapse}>
+      <div className={styles.minimizeIcon} onClick={windowHandler.minimize}>
         {isHover && (
           <Icon
             icon="iconsubtract"
@@ -78,7 +78,7 @@ function WindowHeader({
     <div className={classNames(styles.header)}>
       <span
         {...props}
-        onDoubleClick={expandToViewport}
+        onDoubleClick={maximize}
         className={classNames(styles.title, className)}
       >
         {title}

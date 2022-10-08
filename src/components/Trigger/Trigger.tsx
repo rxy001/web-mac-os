@@ -1,4 +1,4 @@
-import { memo, useMemo, useRef, useState } from "react"
+import { memo, useMemo, useRef, useState, Children } from "react"
 import type { HTMLAttributes, MouseEvent, Ref } from "react"
 import { createPortal } from "react-dom"
 import { cloneElement, supportRef, composeRef } from "@utils"
@@ -105,6 +105,8 @@ function Trigger({
   })
 
   const trigger = useMemo(() => {
+    const child = Children.only(children)
+
     const newProps: HTMLAttributes<HTMLElement> & {
       key: string
       ref?: Ref<any>
@@ -129,11 +131,11 @@ function Trigger({
       newProps.onMouseLeave = getHandler("onMouseLeave")
     }
 
-    if (supportRef(children)) {
-      newProps.ref = composeRef(triggerRef, (children as any).ref)
+    if (supportRef(child)) {
+      newProps.ref = composeRef(triggerRef, (child as any).ref)
     }
 
-    return cloneElement(children, {
+    return cloneElement(child, {
       ...newProps,
     })
   }, [

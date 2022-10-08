@@ -18,7 +18,7 @@ function App({
   onOpened: propsOnOpened,
   onClosed: propsOnClosed,
   onFullscreen: propsOnFullscreen,
-  onCollapsed: propsOnCollapsed,
+  onMinimized: propsOnMinimized,
   onExpanded: propsOnExpanded,
   onExitedFullscreen: propsOnExitedFullscreen,
 }: AppProps) {
@@ -37,7 +37,7 @@ function App({
     return element
   }, [element])
 
-  const pushAppToStore = useMemoizedFn(() => {
+  const pushAppInfoToStore = useMemoizedFn(() => {
     dispatch({
       type: push.type,
       payload: {
@@ -65,27 +65,27 @@ function App({
   })
 
   const onOpened = useMemoizedFn(() => {
-    pushAppToStore()
+    pushAppInfoToStore()
     propsOnOpened?.()
   })
 
   const onFullscreen = useMemoizedFn(() => {
-    pushAppToStore()
+    pushAppInfoToStore()
     propsOnFullscreen?.()
   })
 
   const onExitedFullscreen = useMemoizedFn(() => {
-    pushAppToStore()
+    pushAppInfoToStore()
     propsOnExitedFullscreen?.()
   })
 
-  const onCollapsed = useMemoizedFn(() => {
-    pushAppToStore()
-    propsOnCollapsed?.()
+  const onMinimized = useMemoizedFn(() => {
+    pushAppInfoToStore()
+    propsOnMinimized?.()
   })
 
   const onExpanded = useMemoizedFn(() => {
-    pushAppToStore()
+    pushAppInfoToStore()
     propsOnExpanded?.()
   })
 
@@ -114,7 +114,7 @@ function App({
           onOpened={onOpened}
           onClosed={onClosed}
           onFullscreen={onFullscreen}
-          onCollapsed={onCollapsed}
+          onMinimized={onMinimized}
           onExpanded={onExpanded}
           onExitedFullscreen={onExitedFullscreen}
         >

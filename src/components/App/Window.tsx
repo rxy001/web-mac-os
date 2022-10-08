@@ -33,7 +33,7 @@ import {
   HEADER_HEIGHT,
   INITIAL_Y,
   INITIAL_X,
-  COLLAPSE_DURATION,
+  MINIMIZE_DURATION,
   FULLSCREEN_DURATION,
 } from "./constants"
 
@@ -46,6 +46,7 @@ const transformRndStyle = (rndStyle: RndStyle) => ({
   y: rndStyle.y.get(),
   width: rndStyle.width.get(),
   height: rndStyle.height.get(),
+  opacity: rndStyle.opacity?.get() ?? 1,
 })
 
 function Window(
@@ -58,7 +59,7 @@ function Window(
     onOpened,
     onClosed,
     onFullscreen,
-    onCollapsed,
+    onMinimized,
     onExpanded,
     onExitedFullscreen,
   }: WindowProps,
@@ -68,11 +69,11 @@ function Window(
 
   const [activated, setActivated] = useSetState(true)
 
-  const [isExpandToViewport, setIsExpandToViewport] = useState(false)
+  const [isMaximized, setIsMaximized] = useState(false)
 
   const [clientWidth, clientHeight] = useClientSize()
 
-  const [rndStyle, dragBind, resizeBind, api] = useRnd({
+  const [rndStyle, dragBind, resizeBind, rndApi] = useRnd({
     defaultSize: defaultSize ?? {
       width: INITIAL_WIDTH,
       height: INITIAL_HEIGHT,
@@ -88,11 +89,11 @@ function Window(
     }),
     onDrag({ event }) {
       event.stopPropagation()
-      setIsExpandToViewport(false)
+      setIsMaximized(false)
     },
 
     onResize: () => {
-      setIsExpandToViewport(false)
+      setIsMaximized(false)
     },
   })
 
@@ -110,11 +111,13 @@ function Window(
 
   const prevIsFullscreen = useRef(false)
 
+  const iconDOMInDockRef = useRef<HTMLElement | null>(null as any)
+
   const fullscreenBeforeStateRef = useRef(new BeforeState())
 
-  const expandToViewportBeforeStateRef = useRef(new BeforeState())
+  const maximizeBeforeStateRef = useRef(new BeforeState())
 
-  const collapseBeforeStateRef = useRef(new BeforeState())
+  const minimizeBeforeStateRef = useRef(new BeforeState())
 
   const setZIndex = useMemoizedFn(() => {
     const maxZIndex = windowZIndex.maxZIndex()
@@ -140,12 +143,14 @@ function Window(
   })
 
   const restore = useMemoizedFn((state: PreState, onStart?: () => void) => {
-    const { x, y, width, height, duration } = state
-    api.start({
+    const { x, y, width, height, duration, opacity } = state
+
+    rndApi.start({
       x,
       y,
       width,
       height,
+      opacity,
       config: {
         duration,
       },
@@ -159,11 +164,12 @@ function Window(
         ...transformRndStyle(rndStyle),
         duration: FULLSCREEN_DURATION,
       })
-      api.start({
+      rndApi.start({
         width: clientWidth,
         height: clientHeight,
         x: 0,
         y: 0,
+        opacity: 1,
         config: {
           duration: FULLSCREEN_DURATION,
         },
@@ -179,80 +185,101 @@ function Window(
     }
   })
 
-  const expandToViewport = useMemoizedFn(() => {
-    if (!isExpandToViewport) {
-      expandToViewportBeforeStateRef.current.set({
+  const maximize = useMemoizedFn(() => {
+    if (!isMaximized) {
+      maximizeBeforeStateRef.current.set({
         ...transformRndStyle(rndStyle),
         duration: FULLSCREEN_DURATION,
       })
-      api.start({
+      rndApi.start({
         width: clientWidth,
         height: clientHeight - DOCK_HEIGHT,
         x: 0,
         y: 0,
+        opacity: 1,
         config: {
           duration: FULLSCREEN_DURATION,
         },
       })
-      setIsExpandToViewport(true)
+      setIsMaximized(true)
     }
   })
 
-  const exitViewport = useMemoizedFn(() => {
-    if (isExpandToViewport) {
-      restore(expandToViewportBeforeStateRef.current.get())
-      setIsExpandToViewport(false)
+  const exitMaximize = useMemoizedFn(() => {
+    if (isMaximized) {
+      restore(maximizeBeforeStateRef.current.get())
+      setIsMaximized(false)
     }
   })
 
-  const collapse = useMemoizedFn(() => {
+  const minimize = useMemoizedFn(() => {
+    let x = clientWidth / 2
+    let y = clientHeight - DOCK_HEIGHT
+
+    if (iconDOMInDockRef.current) {
+      ;({ x, y } = iconDOMInDockRef.current.getBoundingClientRect())
+    }
+
     if (activated) {
-      collapseBeforeStateRef.current.set({
+      minimizeBeforeStateRef.current.set({
         ...transformRndStyle(rndStyle),
-        duration: COLLAPSE_DURATION,
+        duration: MINIMIZE_DURATION,
       })
-      api.start({
-        width: 0,
-        height: 0,
-        x: clientWidth / 2,
-        y: clientHeight - DOCK_HEIGHT,
+      rndApi.start({
+        width: 100,
+        height: 100,
+        opacity: 0,
+        x,
+        y,
         config: {
-          duration: COLLAPSE_DURATION,
+          duration: MINIMIZE_DURATION,
+        },
+        onRest: () => {
+          setDisplay("none")
         },
       })
-      setActivated(false, onCollapsed)
+      setActivated(false, onMinimized)
     }
   })
 
   const expand = useMemoizedFn(() => {
     if (!activated) {
-      restore(collapseBeforeStateRef.current.get(), () => setDisplay("block"))
+      restore(minimizeBeforeStateRef.current.get(), () => setDisplay("block"))
       setActivated(true, onExpanded)
       setZIndex()
     }
   })
 
+  // 这里不能直接传 iconDOMInDockRef, 可能是由于 @reduxjs/toolkit 在
+  // useSeletor 获取值时递归所有对象 freeze, 因此不能直接修改 iconDOMInDockRef.current
+  // 好坑，开始还以为是 react 的原因，不过 createElement 只 freeze element ,
+  // 属性值为对象依然可以重新赋值
+  const getIconDOM = useMemoizedFn((node) => {
+    iconDOMInDockRef.current = node
+  })
+
   const windowHandler = useRef<WindowHandler>({
     activated,
     isFullscreen,
-    isExpandToViewport,
-    collapse,
+    isMaximized,
+    minimize,
     expand,
     fullscreen,
     exitFullscreen,
-    expandToViewport,
-    exitViewport,
+    maximize,
+    exitMaximize,
+    getIconDOM,
   })
 
   windowHandler.current.activated = activated
   windowHandler.current.isFullscreen = isFullscreen
-  windowHandler.current.isExpandToViewport = isExpandToViewport
+  windowHandler.current.isMaximized = isMaximized
 
   useImperativeHandle(ref, () => windowHandler.current, [])
 
   useUpdateEffect(() => {
     if (isFullscreen && prevIsFullscreen.current) {
-      api.start({
+      rndApi.start({
         width: clientWidth,
         height: clientHeight,
         immediate: true,

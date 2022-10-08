@@ -26,12 +26,10 @@ function Dock() {
     opacity: 1,
   }))
 
-  const [padding, setPadding] = useState({
-    padding: "0",
-  })
+  const [padding, setPadding] = useState("0")
 
   const mergedStyle = useMemo(
-    () => ({ height: DOCK.DOCK_HEIGHT, ...springStyle, ...padding }),
+    () => ({ ...springStyle, padding, height: DOCK.DOCK_HEIGHT }),
     [springStyle, padding],
   )
 
@@ -60,13 +58,9 @@ function Dock() {
 
     if (prevAppCountRef.current !== length) {
       if (length > 0) {
-        setPadding({
-          padding: `0 ${(ICON_WRAPPER_WIDTH - ICON_SIZE) / 2}px`,
-        })
+        setPadding(`0 ${(ICON_WRAPPER_WIDTH - ICON_SIZE) / 2}px`)
       } else if (!length) {
-        setPadding({
-          padding: "0",
-        })
+        setPadding("0")
       }
 
       api.start({
@@ -81,9 +75,13 @@ function Dock() {
 
   return (
     <animated.div style={mergedStyle} className={styles.dockWrapper}>
-      {map(runningApps, ({ icon, expand, title, id }) => (
+      {map(runningApps, ({ icon, expand, title, id, getIconDOM }) => (
         <Tooltip text={title} key={id}>
-          <div style={iconWrapperStyle} className={styles.iconWrapper}>
+          <div
+            ref={getIconDOM}
+            style={iconWrapperStyle}
+            className={styles.iconWrapper}
+          >
             <Icon
               image
               style={iconStyle}

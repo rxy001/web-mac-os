@@ -27,12 +27,5 @@ export default function useSetState<S>(
     callbackRef.current?.()
   }, [state])
 
-  useEffect(
-    () => () => {
-      callbackRef.current = undefined
-    },
-    [],
-  )
-
   return [state, setState]
 }

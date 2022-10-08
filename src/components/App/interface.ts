@@ -1,4 +1,9 @@
-import type { ReactNode, ComponentType, HTMLAttributes } from "react"
+import type {
+  ReactNode,
+  ComponentType,
+  HTMLAttributes,
+  MutableRefObject,
+} from "react"
 import type { IconProps } from ".."
 
 export interface AppContextProps {
@@ -32,7 +37,7 @@ export interface WindowProps {
   }
   onFullscreen?: () => void
   onExitedFullscreen?: () => void
-  onCollapsed?: () => void
+  onMinimized?: () => void
   onExpanded?: () => void
   onOpened?: () => void
   onClosed?: () => void
@@ -41,13 +46,14 @@ export interface WindowProps {
 export interface WindowHandler {
   activated: boolean
   isFullscreen: boolean
-  isExpandToViewport: boolean
+  isMaximized: boolean
+  getIconDOM: (p: any) => void
   fullscreen: () => void
   exitFullscreen: () => void
-  collapse: () => void
+  minimize: (...p: any[]) => void
   expand: () => void
-  expandToViewport: () => void
-  exitViewport: () => void
+  maximize: () => void
+  exitMaximize: () => void
 }
 export interface WindowHeaderProps
   extends Omit<HTMLAttributes<HTMLDivElement>, "title"> {

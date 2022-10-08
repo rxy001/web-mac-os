@@ -1,5 +1,5 @@
 import { useLayoutEffect, useRef } from "react"
-import { useMemoizedFn, useMount, useUnmount } from "@chooks"
+import { useMemoizedFn, useMount } from "@chooks"
 
 export default function useResizeObserver(
   element: HTMLElement | undefined,
@@ -28,10 +28,6 @@ export default function useResizeObserver(
       }
     }
   }, [element])
-
-  useUnmount(() => {
-    resizeObserverRef.current = null as any
-  })
 
   return () => {
     resizeObserverRef.current.disconnect()
