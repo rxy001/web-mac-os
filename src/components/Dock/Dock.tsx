@@ -6,6 +6,7 @@ import { DOCK } from "@constants"
 import { selectApps } from "@slice/appsSlice"
 import Icon from "../Icon"
 import styles from "./css/dock.less"
+import Tooltip from "../Tooltip"
 
 const { ICON_SIZE, ICON_WRAPPER_WIDTH } = DOCK
 
@@ -80,16 +81,18 @@ function Dock() {
 
   return (
     <animated.div style={mergedStyle} className={styles.dockWrapper}>
-      {map(runningApps, ({ icon, expand, id }) => (
-        <div key={id} style={iconWrapperStyle} className={styles.iconWrapper}>
-          <Icon
-            image
-            style={iconStyle}
-            onClick={expand}
-            className={styles.icon}
-            icon={icon}
-          />
-        </div>
+      {map(runningApps, ({ icon, expand, title, id }) => (
+        <Tooltip text={title} key={id}>
+          <div style={iconWrapperStyle} className={styles.iconWrapper}>
+            <Icon
+              image
+              style={iconStyle}
+              onClick={expand}
+              className={styles.icon}
+              icon={icon}
+            />
+          </div>
+        </Tooltip>
       ))}
     </animated.div>
   )

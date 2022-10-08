@@ -14,3 +14,9 @@ export { KeepAlive, AliveScope } from "./KeepAlive"
 
 export { default as Dock } from "./Dock"
 export type { DockProps } from "./Dock"
+
+export { default as Tooltip } from "./Tooltip"
+export type { TooltipProps } from "./Tooltip"
+
+export { default as Trigger } from "./Trigger"
+export type { TriggerProps } from "./Trigger"

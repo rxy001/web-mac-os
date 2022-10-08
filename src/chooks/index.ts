@@ -17,3 +17,7 @@ export { default as useMemoizedFn } from "./useMemoizedFn"
 export { default as useMount } from "./useMount"
 
 export { default as useUnmount } from "./useUnmount"
+
+export { default as useDebounceFn } from "./useDebounceFn"
+
+export { default as useForceUpdate } from "./useForceUpdate"
