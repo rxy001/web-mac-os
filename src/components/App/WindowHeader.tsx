@@ -51,6 +51,10 @@ function WindowHeader({
           />
         )}
       </div>
+      {/* {windowHandler.isFullscreen ? (
+        <div className={styles.disabledIcon} />
+      ) : (
+      )} */}
       <div className={styles.minimizeIcon} onClick={windowHandler.minimize}>
         {isHover && (
           <Icon

@@ -7,7 +7,7 @@ export interface Nodes {
 export interface CacheItem {
   children: ReactElement
   keepAlive: boolean
-  activated: boolean
+  isActivated: boolean
 }
 
 export interface Cache {

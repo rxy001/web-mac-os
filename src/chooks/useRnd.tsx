@@ -11,6 +11,7 @@ import type { SpringValues, SpringRef } from "@react-spring/web"
 import { useSpring } from "@react-spring/web"
 import type { ReactDOMAttributes } from "@use-gesture/react/dist/declarations/src/types"
 import styles from "./css/resize.less"
+import useUnmount from "./useUnmount"
 
 export interface Position {
   x: number
@@ -297,6 +298,10 @@ const useRnd = ({
       })
     }
   }, [enableResizing])
+
+  useUnmount(() => {
+    resizeBorderRef.current = null
+  })
 
   return [style, dragBind, resizeBind, api]
 }

@@ -37,7 +37,7 @@ export default function KeepAlive({
     cacheItemRef.current = {
       children,
       keepAlive,
-      activated: true,
+      isActivated: true,
     }
     setCache(key, cacheItemRef.current)
   }, [key, children, keepAlive, setCache, setKeys])
@@ -53,7 +53,7 @@ export default function KeepAlive({
   //   () => () => {
   //     setCache(key, {
   //       ...cacheItemRef.current,
-  //       activated: false,
+  //       isActivated: false,
   //     } as CacheItem)
   //   },
   //   [key, setCache],

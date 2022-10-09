@@ -5,7 +5,7 @@ import { useAppDispatch, useMemoizedFn } from "@chooks"
 import shortid from "shortid"
 import Shortcut from "./Shortcut"
 import Window from "./Window"
-import { push, remove } from "../../redux/appsSlice"
+import { pushApp, removeApp } from "../../redux/appsSlice"
 import { AppContext } from "./context"
 import type { AppProps, AppContextProps, WindowHandler } from "./interface"
 
@@ -38,9 +38,8 @@ function App({
   }, [element])
 
   const pushAppInfoToStore = useMemoizedFn(() => {
-    dispatch({
-      type: push.type,
-      payload: {
+    dispatch(
+      pushApp({
         key: id,
         app: {
           id,
@@ -48,12 +47,12 @@ function App({
           icon,
           ...windowRef.current,
         },
-      },
-    })
+      }),
+    )
   })
 
   const openApp = useMemoizedFn(() => {
-    if (windowRef.current?.activated === false) {
+    if (windowRef.current?.isActivated === false) {
       windowRef.current.expand()
     } else if (!windowRef.current) {
       setVisible(true)
@@ -90,12 +89,12 @@ function App({
   })
 
   const onClosed = useMemoizedFn(() => {
-    dispatch({
-      type: remove.type,
-      payload: {
+    dispatch(
+      removeApp({
         key: id,
-      },
-    })
+      }),
+    )
+
     propsOnClosed?.()
   })
 

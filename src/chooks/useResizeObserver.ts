@@ -1,19 +1,22 @@
 import { useLayoutEffect, useRef } from "react"
-import { useMemoizedFn, useMount } from "@chooks"
+import { useMount, useLatest, useDebounceFn } from "./index"
 
 export default function useResizeObserver(
   element: HTMLElement | undefined,
   callback: (...p: any[]) => any,
+  wait?: number,
 ) {
-  const onResize = useMemoizedFn(([{ target }]: ResizeObserverEntry[]) => {
+  const latest = useLatest(callback)
+
+  const listener = useDebounceFn(([{ target }]: ResizeObserverEntry[]) => {
     if (!document.documentElement.contains(target)) return
-    callback()
-  })
+    latest.current(target)
+  }, wait)
 
   const resizeObserverRef = useRef<ResizeObserver>(null as any)
 
   useMount(() => {
-    resizeObserverRef.current = new ResizeObserver(onResize)
+    resizeObserverRef.current = new ResizeObserver(listener)
   })
 
   useLayoutEffect(() => {

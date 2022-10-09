@@ -1,1 +1,3 @@
-export { default as DOCK } from "./dock"
+export * from "./dock"
+
+export * from "./duration"

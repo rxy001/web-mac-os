@@ -39,7 +39,7 @@ export interface WindowProps {
 }
 
 export interface WindowHandler {
-  activated: boolean
+  isActivated: boolean
   isFullscreen: boolean
   isMaximized: boolean
   getIconDOM: (p: any) => void

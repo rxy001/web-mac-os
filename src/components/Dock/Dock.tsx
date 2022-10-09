@@ -1,14 +1,20 @@
 import { memo, useEffect, useMemo, useState, useRef } from "react"
-import { useAppSelector } from "@chooks"
-import { forEach, map, size } from "lodash"
+import { useAppSelector, useMemoizedFn, useAppDispatch } from "@chooks"
+import { map, size } from "lodash"
 import { useSpring, animated } from "@react-spring/web"
-import { DOCK } from "@constants"
+import {
+  ICON_SIZE,
+  ICON_WRAPPER_WIDTH,
+  DOCK_HEIGHT,
+  FULLSCREEN_DURATION,
+} from "@constants"
 import { selectApps } from "@slice/appsSlice"
+import { pushDock, removeDock } from "@slice/dockSlice"
 import Icon from "../Icon"
 import styles from "./css/dock.less"
 import Tooltip from "../Tooltip"
 
-const { ICON_SIZE, ICON_WRAPPER_WIDTH } = DOCK
+// const { ICON_SIZE, ICON_WRAPPER_WIDTH, DOCK_HEIGHT } = DOCK
 
 const iconStyle = {
   width: ICON_SIZE,
@@ -19,39 +25,50 @@ const iconWrapperStyle = { width: ICON_WRAPPER_WIDTH }
 
 function Dock() {
   const runningApps = useAppSelector(selectApps)
+  const dispatch = useAppDispatch()
+
   const prevAppCountRef = useRef(0)
 
   const [springStyle, api] = useSpring(() => ({
     width: 0,
+    y: 0,
+    x: "-50%",
     opacity: 1,
   }))
 
   const [padding, setPadding] = useState("0")
 
   const mergedStyle = useMemo(
-    () => ({ ...springStyle, padding, height: DOCK.DOCK_HEIGHT }),
+    () => ({ ...springStyle, padding, height: DOCK_HEIGHT }),
     [springStyle, padding],
   )
 
-  useEffect(() => {
-    let fullscreen = false
-    forEach(runningApps, ({ isFullscreen, activated }) => {
-      if (isFullscreen && activated) {
-        fullscreen = true
-        return fullscreen
-      }
+  const hideDock = useMemoizedFn(() => {
+    api.start({
+      y: DOCK_HEIGHT,
+      opacity: 0,
+      config: {
+        duration: FULLSCREEN_DURATION,
+      },
     })
+  })
 
-    if (fullscreen) {
-      api.start({
-        opacity: 0,
-      })
-    } else {
-      api.start({
-        opacity: 1,
-      })
+  const showDock = useMemoizedFn(() => {
+    api.start({
+      y: 0,
+      opacity: 1,
+      config: {
+        duration: FULLSCREEN_DURATION,
+      },
+    })
+  })
+
+  useEffect(() => {
+    dispatch(pushDock({ hideDock, showDock }))
+    return () => {
+      dispatch(removeDock())
     }
-  }, [runningApps, api])
+  }, [hideDock, showDock, dispatch])
 
   useEffect(() => {
     const length = size(runningApps)

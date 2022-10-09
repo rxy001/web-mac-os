@@ -10,24 +10,21 @@ type App = WindowHandler &
     id: string
   }
 
-// Define a type for the slice state
 interface AppsState {
   running: {
     [key: Key]: App
   }
 }
 
-// Define the initial state using that type
 const initialState: AppsState = {
   running: {},
 }
 
 const appsSlice = createSlice({
   name: "apps",
-  // `createSlice` will infer the state type from the `initialState` argument
   initialState,
   reducers: {
-    push: (
+    pushApp: (
       state,
       action: PayloadAction<{
         key: Key
@@ -40,7 +37,7 @@ const appsSlice = createSlice({
         [key]: app,
       }
     },
-    remove: (
+    removeApp: (
       state,
       action: PayloadAction<{
         key: Key
@@ -52,9 +49,8 @@ const appsSlice = createSlice({
   },
 })
 
-export const { push, remove } = appsSlice.actions
+export const { pushApp, removeApp } = appsSlice.actions
 
-// Other code such as selectors can use the imported `RootState` type
 export const selectApps = (state: RootState) => state.apps.running
 
 export const reducers = appsSlice.reducer

@@ -5,10 +5,15 @@ import {
   useRef,
   useState,
 } from "react"
-import { useMemoizedFn, useMount, useForceUpdate } from "@chooks"
+import {
+  useMemoizedFn,
+  useMount,
+  useForceUpdate,
+  useResizeObserver,
+  useUnmount,
+} from "@chooks"
 import { ceil, isEqual, max } from "lodash"
 import { isDOMVisible } from "@utils"
-import useResizeObserver from "./useResizeObserver"
 import styles from "./css/trigger.less"
 import Motion from "./Motion"
 import type { PopupProps } from "./interface"
@@ -84,6 +89,10 @@ const Popup = forwardRef<HTMLDivElement, PopupProps>(
     useImperativeHandle(ref, () => popupRef.current, [])
 
     useMount(forceUpdate)
+
+    useUnmount(() => {
+      triggerRef.current = null as any
+    })
 
     return (
       <div className={styles.popup} key="popup">

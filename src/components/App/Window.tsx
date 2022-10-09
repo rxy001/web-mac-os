@@ -10,17 +10,16 @@ import {
 } from "react"
 import {
   useRnd,
-  useClientSize,
-  useUpdateEffect,
   useMemoizedFn,
   useSetState,
   useMount,
   useUnmount,
+  useResizeObserver,
 } from "@chooks"
 import type { RndStyle } from "@chooks"
 import { createPortal } from "react-dom"
 import { animated } from "@react-spring/web"
-import { DOCK } from "@constants"
+import { DOCK_HEIGHT, FULLSCREEN_DURATION } from "@constants"
 import styles from "./css/window.less"
 import type { WindowProps, WindowHandler } from "./interface"
 import WindowHeader from "./WindowHeader"
@@ -34,12 +33,11 @@ import {
   INITIAL_Y,
   INITIAL_X,
   MINIMIZE_DURATION,
-  FULLSCREEN_DURATION,
 } from "./constants"
 
-const { DOCK_HEIGHT } = DOCK
-
 let Z_INDEX = 0
+
+const container = document.body
 
 const transformRndStyle = (rndStyle: RndStyle) => ({
   x: rndStyle.x.get(),
@@ -67,11 +65,9 @@ function Window(
 ) {
   const [isFullscreen, setIsFullscreen] = useSetState(false)
 
-  const [activated, setActivated] = useSetState(true)
+  const [isActivated, setIsActivated] = useSetState(true)
 
   const [isMaximized, setIsMaximized] = useState(false)
-
-  const [clientWidth, clientHeight] = useClientSize()
 
   const [rndStyle, dragBind, resizeBind, rndApi] = useRnd({
     defaultSize: defaultSize ?? {
@@ -108,8 +104,6 @@ function Window(
     () => ({ ...rndStyle, ...style }),
     [rndStyle, style],
   )
-
-  const prevIsFullscreen = useRef(false)
 
   const iconDOMInDockRef = useRef<HTMLElement | null>(null as any)
 
@@ -164,6 +158,9 @@ function Window(
         ...transformRndStyle(rndStyle),
         duration: FULLSCREEN_DURATION,
       })
+
+      const { clientWidth, clientHeight } = container
+
       rndApi.start({
         width: clientWidth,
         height: clientHeight,
@@ -191,6 +188,9 @@ function Window(
         ...transformRndStyle(rndStyle),
         duration: FULLSCREEN_DURATION,
       })
+
+      const { clientWidth, clientHeight } = container
+
       rndApi.start({
         width: clientWidth,
         height: clientHeight - DOCK_HEIGHT,
@@ -213,14 +213,19 @@ function Window(
   })
 
   const minimize = useMemoizedFn(() => {
-    let x = clientWidth / 2
-    let y = clientHeight - DOCK_HEIGHT
+    let x = 0
+    let y = 0
+
+    const { clientWidth, clientHeight } = container
 
     if (iconDOMInDockRef.current) {
       ;({ x, y } = iconDOMInDockRef.current.getBoundingClientRect())
+    } else {
+      x = clientWidth / 2
+      y = clientHeight - DOCK_HEIGHT
     }
 
-    if (activated) {
+    if (isActivated) {
       minimizeBeforeStateRef.current.set({
         ...transformRndStyle(rndStyle),
         duration: MINIMIZE_DURATION,
@@ -238,14 +243,14 @@ function Window(
           setDisplay("none")
         },
       })
-      setActivated(false, onMinimized)
+      setIsActivated(false, onMinimized)
     }
   })
 
   const expand = useMemoizedFn(() => {
-    if (!activated) {
+    if (!isActivated) {
       restore(minimizeBeforeStateRef.current.get(), () => setDisplay("block"))
-      setActivated(true, onExpanded)
+      setIsActivated(true, onExpanded)
       setZIndex()
     }
   })
@@ -258,8 +263,9 @@ function Window(
     iconDOMInDockRef.current = node
   })
 
+  // 不能使用 useLatest，useLatest 是重新赋值， ref 获取不到最新的值
   const windowHandler = useRef<WindowHandler>({
-    activated,
+    isActivated,
     isFullscreen,
     isMaximized,
     minimize,
@@ -271,29 +277,48 @@ function Window(
     getIconDOM,
   })
 
-  windowHandler.current.activated = activated
+  windowHandler.current.isActivated = isActivated
   windowHandler.current.isFullscreen = isFullscreen
   windowHandler.current.isMaximized = isMaximized
 
-  useImperativeHandle(ref, () => windowHandler.current, [])
+  useImperativeHandle(ref, () => windowHandler.current, [windowHandler])
 
-  useUpdateEffect(() => {
-    if (isFullscreen && prevIsFullscreen.current) {
-      rndApi.start({
-        width: clientWidth,
-        height: clientHeight,
-        immediate: true,
-      })
-    }
-    prevIsFullscreen.current = isFullscreen
-  }, [isFullscreen, clientWidth, clientHeight])
+  useResizeObserver(
+    document.body,
+    () => {
+      const { clientWidth, clientHeight } = container
 
+      if (isFullscreen) {
+        rndApi.start({
+          width: clientWidth,
+          height: clientHeight,
+          immediate: true,
+        })
+
+        if (isMaximized) {
+          fullscreenBeforeStateRef.current.set({
+            ...fullscreenBeforeStateRef.current.get(),
+            width: clientWidth,
+            height: clientHeight - DOCK_HEIGHT,
+          })
+        }
+      } else if (isMaximized) {
+        rndApi.start({
+          width: clientWidth,
+          height: clientHeight - DOCK_HEIGHT,
+          immediate: true,
+        })
+      }
+    },
+    200,
+  )
   useMount(() => {
     onOpened?.()
   })
 
   useUnmount(() => {
     onClosed?.()
+    iconDOMInDockRef.current = null
   })
 
   return createPortal(

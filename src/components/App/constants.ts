@@ -6,4 +6,3 @@ export const INITIAL_Y = document.body.clientHeight / 2 - INITIAL_HEIGHT / 2
 export const INITIAL_X = document.body.clientWidth / 2 - INITIAL_WIDTH / 2
 
 export const MINIMIZE_DURATION = 150
-export const FULLSCREEN_DURATION = 300
