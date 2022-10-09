@@ -20,3 +20,6 @@ export type { TooltipProps } from "./Tooltip"
 
 export { default as Trigger } from "./Trigger"
 export type { TriggerProps } from "./Trigger"
+
+export { default as Progress } from "./Progress"
+export type { ProgressProps } from "./Progress"

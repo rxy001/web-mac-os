@@ -301,10 +301,9 @@ function Window(
       <animated.div
         style={mergedStyle}
         onMouseDown={setZIndex}
-        className={classNames(
-          styles.window,
-          isFullscreen ? styles.fullscreen : "",
-        )}
+        className={classNames(styles.window, {
+          [styles.fullscreen]: isFullscreen,
+        })}
         {...resizeBind()}
       >
         <WindowHeader

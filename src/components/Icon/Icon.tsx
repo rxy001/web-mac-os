@@ -1,5 +1,5 @@
 import classNames from "classnames"
-import { memo, useState, useEffect, forwardRef } from "react"
+import { useState, useEffect, forwardRef } from "react"
 import { useMemoizedFn } from "@chooks"
 import type { IconProps } from "./interface"
 import styles from "./css/icon.less"
@@ -77,10 +77,9 @@ const Icon = forwardRef<HTMLSpanElement, IconProps>(
         {mask && (
           <div
             style={maskStyle}
-            className={classNames(
-              maskVisible ? styles.mask : "",
-              maskClassName,
-            )}
+            className={classNames(maskClassName, {
+              [styles.mask]: maskVisible,
+            })}
           />
         )}
       </span>

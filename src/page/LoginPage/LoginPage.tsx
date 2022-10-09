@@ -59,20 +59,18 @@ export default function LoginPage() {
     <div className={styles.loginPageContainer} style={backgroundImage}>
       <div className={styles.tabs} onClick={onTabsClick}>
         <div
-          className={classNames(
-            styles.title,
-            tabIndex === LOGIN_TAB_INDEX ? styles.active : "",
-          )}
+          className={classNames(styles.title, {
+            [styles.active]: tabIndex === LOGIN_TAB_INDEX,
+          })}
           tabIndex={LOGIN_TAB_INDEX}
         >
           账号登陆
         </div>
         <span className={styles.divider} />
         <div
-          className={classNames(
-            styles.title,
-            tabIndex === REGISTER_TAB_INDEX ? styles.active : "",
-          )}
+          className={classNames(styles.title, {
+            [styles.active]: tabIndex === REGISTER_TAB_INDEX,
+          })}
           tabIndex={REGISTER_TAB_INDEX}
         >
           账号注册

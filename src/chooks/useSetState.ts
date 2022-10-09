@@ -1,11 +1,5 @@
 import type { SetStateAction } from "react"
-import {
-  useCallback,
-  useState,
-  useRef,
-  useLayoutEffect,
-  useEffect,
-} from "react"
+import { useCallback, useState, useRef, useLayoutEffect } from "react"
 
 type Callback = () => void
 

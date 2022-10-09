@@ -1,9 +1,4 @@
-import type {
-  ReactNode,
-  ComponentType,
-  HTMLAttributes,
-  MutableRefObject,
-} from "react"
+import type { ReactNode, ComponentType, HTMLAttributes } from "react"
 import type { IconProps } from ".."
 
 export interface AppContextProps {
