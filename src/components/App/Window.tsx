@@ -19,7 +19,7 @@ import {
 import type { RndStyle } from "@chooks"
 import { createPortal } from "react-dom"
 import { animated } from "@react-spring/web"
-import { DOCK_HEIGHT, FULLSCREEN_DURATION } from "@constants"
+import { DOCK_HEIGHT, FULLSCREEN_DURATION, TOP_BAR_HEIGHT } from "@constants"
 import styles from "./css/window.less"
 import type { WindowProps, WindowHandler } from "./interface"
 import WindowHeader from "./WindowHeader"
@@ -29,9 +29,9 @@ import type { PreState } from "./BeforeState"
 import {
   INITIAL_WIDTH,
   INITIAL_HEIGHT,
-  HEADER_HEIGHT,
   INITIAL_Y,
   INITIAL_X,
+  WINDOW_HEADER_HEIGHT,
   MINIMIZE_DURATION,
 } from "./constants"
 
@@ -80,8 +80,8 @@ function Window(
     },
     enableResizing: !isFullscreen,
     bounds: () => ({
-      top: 0,
-      bottom: window.innerHeight - HEADER_HEIGHT,
+      top: TOP_BAR_HEIGHT,
+      bottom: window.innerHeight - WINDOW_HEADER_HEIGHT,
     }),
     onDrag({ event }) {
       event.stopPropagation()
@@ -182,6 +182,15 @@ function Window(
     }
   })
 
+  const getMaximizedSize = useMemoizedFn(() => {
+    const { clientHeight, clientWidth } = container
+
+    return {
+      width: clientWidth,
+      height: clientHeight - DOCK_HEIGHT - TOP_BAR_HEIGHT,
+    }
+  })
+
   const maximize = useMemoizedFn(() => {
     if (!isMaximized) {
       maximizeBeforeStateRef.current.set({
@@ -189,17 +198,14 @@ function Window(
         duration: FULLSCREEN_DURATION,
       })
 
-      const { clientWidth, clientHeight } = container
-
       rndApi.start({
-        width: clientWidth,
-        height: clientHeight - DOCK_HEIGHT,
         x: 0,
-        y: 0,
+        y: TOP_BAR_HEIGHT,
         opacity: 1,
         config: {
           duration: FULLSCREEN_DURATION,
         },
+        ...getMaximizedSize(),
       })
       setIsMaximized(true)
     }
@@ -216,13 +222,12 @@ function Window(
     let x = 0
     let y = 0
 
-    const { clientWidth, clientHeight } = container
-
     if (iconDOMInDockRef.current) {
       ;({ x, y } = iconDOMInDockRef.current.getBoundingClientRect())
     } else {
-      x = clientWidth / 2
-      y = clientHeight - DOCK_HEIGHT
+      const { width, height } = getMaximizedSize()
+      x = width / 2
+      y = height
     }
 
     if (isActivated) {
@@ -256,7 +261,7 @@ function Window(
   })
 
   // 这里不能直接传 iconDOMInDockRef, 可能是由于 @reduxjs/toolkit 在
-  // useSeletor 获取值时递归所有对象 freeze, 因此不能直接修改 iconDOMInDockRef.current
+  // dispatch 或者 useSelector 时递归所有对象 freeze, 因此不能直接修改 iconDOMInDockRef.current
   // 好坑，开始还以为是 react 的原因，不过 createElement 只 freeze element ,
   // 属性值为对象依然可以重新赋值
   const getIconDOM = useMemoizedFn((node) => {
@@ -298,15 +303,13 @@ function Window(
         if (isMaximized) {
           fullscreenBeforeStateRef.current.set({
             ...fullscreenBeforeStateRef.current.get(),
-            width: clientWidth,
-            height: clientHeight - DOCK_HEIGHT,
+            ...getMaximizedSize(),
           })
         }
       } else if (isMaximized) {
         rndApi.start({
-          width: clientWidth,
-          height: clientHeight - DOCK_HEIGHT,
           immediate: true,
+          ...getMaximizedSize(),
         })
       }
     },

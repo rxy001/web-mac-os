@@ -1,4 +1,4 @@
-import { App, Dock } from "@brc"
+import { App, Dock, Topbar } from "@brc"
 import { memo } from "react"
 import { useOnAppFullScreen } from "@chooks"
 import styles from "./css/desktop.less"
@@ -13,7 +13,8 @@ function Desktop() {
 
   return (
     <div className={styles.desktop}>
-      {/* <SplashScreen /> */}
+      <SplashScreen />
+      <Topbar />
       <div className={styles.apps}>
         <App icon={typoraImg} title="typora" element={importTypora} />
         <App icon={wechatImg} title="wechat" element="wechat" />

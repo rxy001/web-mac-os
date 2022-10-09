@@ -8,3 +8,5 @@ export { default as supportRef } from "./supportRef"
 export { default as composeRef } from "./composeRef"
 
 export { default as isDOMVisible } from "./isDOMVisible"
+
+export { default as noop } from "./noop"

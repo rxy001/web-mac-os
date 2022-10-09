@@ -274,6 +274,7 @@ const useRnd = ({
         from: () => [style.x.get(), style.y.get()],
         transform: gestureTransform,
         filterTaps: true,
+        bounds,
       },
     },
   )

@@ -1,13 +1,12 @@
 import { createSlice } from "@reduxjs/toolkit"
 import type { PayloadAction } from "@reduxjs/toolkit"
+import { noop } from "@utils"
 import type { RootState } from "./index"
 
 interface DockState {
   showDock: () => void
   hideDock: () => void
 }
-
-function noop() {}
 
 const initialState: DockState = {
   showDock: noop,

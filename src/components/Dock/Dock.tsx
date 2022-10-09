@@ -8,13 +8,12 @@ import {
   DOCK_HEIGHT,
   FULLSCREEN_DURATION,
 } from "@constants"
+import { createPortal } from "react-dom"
 import { selectApps } from "@slice/appsSlice"
 import { pushDock, removeDock } from "@slice/dockSlice"
 import Icon from "../Icon"
 import styles from "./css/dock.less"
 import Tooltip from "../Tooltip"
-
-// const { ICON_SIZE, ICON_WRAPPER_WIDTH, DOCK_HEIGHT } = DOCK
 
 const iconStyle = {
   width: ICON_SIZE,
@@ -90,8 +89,8 @@ function Dock() {
     }
   }, [runningApps, api])
 
-  return (
-    <animated.div style={mergedStyle} className={styles.dockWrapper}>
+  return createPortal(
+    <animated.div key="dock" style={mergedStyle} className={styles.dockWrapper}>
       {map(runningApps, ({ icon, expand, title, id, getIconDOM }) => (
         <Tooltip text={title} key={id}>
           <div
@@ -109,7 +108,8 @@ function Dock() {
           </div>
         </Tooltip>
       ))}
-    </animated.div>
+    </animated.div>,
+    document.body,
   )
 }
 
