@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef } from "react"
+import { useCallback, useLayoutEffect, useRef } from "react"
 import { useMount, useLatest, useDebounceFn } from "./index"
 
 export default function useResizeObserver(
@@ -13,26 +13,26 @@ export default function useResizeObserver(
     latest.current(target)
   }, wait)
 
-  const resizeObserverRef = useRef<ResizeObserver>(null as any)
+  const resizeObserver = useRef<ResizeObserver>(null as any)
 
   useMount(() => {
-    resizeObserverRef.current = new ResizeObserver(listener)
+    resizeObserver.current = new ResizeObserver(listener)
   })
 
   useLayoutEffect(() => {
     let prevElement = element
     if (element) {
-      resizeObserverRef.current.observe(element)
+      resizeObserver.current.observe(element)
     }
     return () => {
       if (prevElement) {
         prevElement = undefined
-        resizeObserverRef.current.disconnect()
+        resizeObserver.current.disconnect()
       }
     }
   }, [element])
 
-  return () => {
-    resizeObserverRef.current.disconnect()
-  }
+  return useCallback(() => {
+    resizeObserver.current.disconnect()
+  }, [])
 }

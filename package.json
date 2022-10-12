@@ -45,13 +45,6 @@
       "last 1 safari version"
     ]
   },
-  "lint-staged": {
-    "src/*.{js,jsx,ts,tsx}": [
-      "npm run lint:script",
-      "npm run lint:style",
-      "npm run prettier"
-    ]
-  },
   "devDependencies": {
     "@commitlint/cli": "^17.1.2",
     "@commitlint/config-conventional": "^17.1.0",

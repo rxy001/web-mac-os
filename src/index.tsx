@@ -1,18 +1,23 @@
 import ReactDOM from "react-dom/client"
-import { Provider } from "react-redux"
+import { Provider as ReactRedux } from "react-redux"
 import { BrowserRouter } from "react-router-dom"
+import { Provider as EventEmitter, createEventEmitter } from "@eventEmitter"
 import App from "./App"
 import reportWebVitals from "./reportWebVitals"
 import store from "./redux"
 import "./less/index.less"
 
+const eventEmitter = createEventEmitter()
+
 const root = ReactDOM.createRoot(document.getElementById("root") as HTMLElement)
 
 root.render(
   <BrowserRouter>
-    <Provider store={store}>
-      <App />
-    </Provider>
+    <ReactRedux store={store}>
+      <EventEmitter eventEmitter={eventEmitter}>
+        <App />
+      </EventEmitter>
+    </ReactRedux>
   </BrowserRouter>,
 )
 

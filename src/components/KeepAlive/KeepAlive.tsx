@@ -18,12 +18,12 @@ export default function KeepAlive({
 }: KeepAliveProps) {
   const { nodes, setCache, keys, setKeys } = useContext(AliveScopeContext)
 
-  const isMountedRef = useRef(false)
+  const isMounted = useRef(false)
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const key = useMemo(() => id, [])
 
-  const cacheItemRef = useRef<CacheItem>()
+  const cacheItem = useRef<CacheItem>()
 
   const keepAliveRef = useRef<HTMLDivElement>(null)
 
@@ -34,25 +34,25 @@ export default function KeepAlive({
   }, [keys, key, setKeys])
 
   useEffect(() => {
-    cacheItemRef.current = {
+    cacheItem.current = {
       children,
       keepAlive,
       isActivated: true,
     }
-    setCache(key, cacheItemRef.current)
+    setCache(key, cacheItem.current)
   }, [key, children, keepAlive, setCache, setKeys])
 
   useEffect(() => {
-    if (nodes[key] && !isMountedRef.current) {
+    if (nodes[key] && !isMounted.current) {
       keepAliveRef.current?.appendChild(nodes[key])
-      isMountedRef.current = true
+      isMounted.current = true
     }
   }, [nodes, key])
 
   // useEffect(
   //   () => () => {
   //     setCache(key, {
-  //       ...cacheItemRef.current,
+  //       ...cacheItem.current,
   //       isActivated: false,
   //     } as CacheItem)
   //   },

@@ -6,16 +6,23 @@ export default function useUpdateEffect(
   effect: EffectCallback,
   deps?: DependencyList,
 ) {
-  const isMountedRef = useRef(false)
+  const isMounted = useRef(false)
 
-  const effectRef = useLatest(effect)
+  const cb = useLatest(effect)
 
   useEffect(() => {
-    if (isMountedRef.current) {
-      return effectRef.current()
+    if (isMounted.current) {
+      cb.current()
+    } else {
+      isMounted.current = true
     }
-    isMountedRef.current = true
-
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, deps)
+
+  useEffect(
+    () => () => {
+      isMounted.current = false
+    },
+    [],
+  )
 }

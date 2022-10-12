@@ -1,58 +1,85 @@
+import shortid from "shortid"
 import { memo, useMemo, useRef, useState } from "react"
 import { asyncLoadComponent } from "@utils"
 import { connect } from "react-redux"
-import { useAppDispatch, useMemoizedFn } from "@chooks"
-import shortid from "shortid"
-import Shortcut from "./Shortcut"
+import {
+  useAppDispatch,
+  useMemoizedFn,
+  useUnmount,
+  useUpdateEffect,
+} from "@chooks"
+import { reduce } from "lodash"
+import { useEventEmitter } from "@eventEmitter"
+import type { Listener } from "@eventEmitter"
 import Window from "./Window"
+import DockShortcut from "./DockShortcut"
+import DesktopShortcut from "./DesktopShortcut"
 import { pushApp, removeApp } from "../../redux/appsSlice"
 import { AppContext } from "./context"
-import type { AppProps, AppContextProps, WindowHandler } from "./interface"
+import type {
+  AppProps,
+  AppContextProps,
+  WindowHandlers,
+  WindowHandlerType,
+  WindowRef,
+} from "./interface"
+import { EventType } from "./hooks"
 
-function App({
-  element,
-  title,
-  icon,
-  defaultSize,
-  defaultPosition,
-  onOpened: propsOnOpened,
-  onClosed: propsOnClosed,
-  onFullscreen: propsOnFullscreen,
-  onMinimized: propsOnMinimized,
-  onExpanded: propsOnExpanded,
-  onExitedFullscreen: propsOnExitedFullscreen,
-}: AppProps) {
+const handlerTypes: WindowHandlerType[] = [
+  "fullscreen",
+  "exitFullscreen",
+  "minimize",
+  "expand",
+  "maximize",
+  "exitMaximize",
+  "isActivated",
+  "isFullscreen",
+  "isMaximized",
+]
+
+function App({ element, title, icon, defaultSize, defaultPosition }: AppProps) {
   const dispatch = useAppDispatch()
 
-  const id = useMemo(() => shortid.generate(), [])
+  const eventEmitter = useEventEmitter()
 
   const [visible, setVisible] = useState(false)
 
-  const windowRef = useRef<WindowHandler>(null as any)
+  const listeners = useRef(new Map())
+
+  const id = useMemo(() => shortid.generate(), [])
+
+  const windowRef = useRef<WindowRef>(null as any)
 
   const children = useMemo(() => {
     if (typeof element === "function") {
       return asyncLoadComponent(element)
     }
-    return element
+    throw new Error(`${element} is not a function`)
   }, [element])
 
-  const pushAppInfoToStore = useMemoizedFn(() => {
-    dispatch(
-      pushApp({
-        key: id,
-        app: {
-          id,
-          title,
-          icon,
-          ...windowRef.current,
-        },
-      }),
-    )
-  })
+  const fireHandler = useMemoizedFn<(p: WindowHandlerType) => any>(
+    (handler: WindowHandlerType) => {
+      if (windowRef.current) {
+        return windowRef.current[handler]()
+      }
+    },
+  )
+
+  const renderDockShortcut = useMemoizedFn((iconWrapperWidth, iconSize) => (
+    <DockShortcut
+      id={id}
+      key={id}
+      icon={icon}
+      title={title}
+      openApp={openApp}
+      iconSize={iconSize}
+      iconWrapperWidth={iconWrapperWidth}
+      ref={windowRef.current.dockShortcutRef}
+    />
+  ))
 
   const openApp = useMemoizedFn(() => {
-    if (windowRef.current?.isActivated === false) {
+    if (windowRef.current?.isActivated() === false) {
       windowRef.current.expand()
     } else if (!windowRef.current) {
       setVisible(true)
@@ -60,62 +87,120 @@ function App({
   })
 
   const closeApp = useMemoizedFn(() => {
+    onClose()
     setVisible(false)
   })
 
   const onOpened = useMemoizedFn(() => {
-    pushAppInfoToStore()
-    propsOnOpened?.()
+    const { isActivated, isFullscreen, isMaximized } = windowRef.current
+    dispatch(
+      pushApp({
+        key: id,
+        app: {
+          id,
+          title,
+          isMaximized,
+          isFullscreen,
+          isActivated,
+          renderDockShortcut,
+        },
+      }),
+    )
+    eventEmitter.emit(EventType.Opened, title)
   })
 
-  const onFullscreen = useMemoizedFn(() => {
-    pushAppInfoToStore()
-    propsOnFullscreen?.()
-  })
-
-  const onExitedFullscreen = useMemoizedFn(() => {
-    pushAppInfoToStore()
-    propsOnExitedFullscreen?.()
-  })
-
-  const onMinimized = useMemoizedFn(() => {
-    pushAppInfoToStore()
-    propsOnMinimized?.()
-  })
-
-  const onExpanded = useMemoizedFn(() => {
-    pushAppInfoToStore()
-    propsOnExpanded?.()
-  })
-
-  const onClosed = useMemoizedFn(() => {
+  const onClose = useMemoizedFn(() => {
+    eventEmitter.emit(EventType.Close, title)
     dispatch(
       removeApp({
         key: id,
       }),
     )
-
-    propsOnClosed?.()
   })
 
-  const methods = useRef<AppContextProps>({ openApp, closeApp })
+  const onFullscreen = useMemoizedFn(() => {
+    eventEmitter.emit(EventType.Fullscreen, title)
+  })
+
+  const onExitFullscreen = useMemoizedFn(() => {
+    eventEmitter.emit(EventType.ExitFullScreen, title)
+  })
+
+  const onMinimize = useMemoizedFn(() => {
+    eventEmitter.emit(EventType.Minimize, title)
+  })
+  const onExpand = useMemoizedFn(() => {
+    eventEmitter.emit(EventType.Expand, title)
+  })
+
+  const subscribe = useMemoizedFn((event: EventType, listener: Listener) => {
+    function l(t: string) {
+      if (t === title) {
+        listener()
+      }
+    }
+    listeners.current.set(listener, { event, listener })
+    eventEmitter.on(event, l)
+  })
+
+  const unSubscribe = useMemoizedFn((event: EventType, listener: Listener) => {
+    const { listener: l } = listeners.current.get(listener)
+    listeners.current.delete(l)
+    eventEmitter.off(event, l)
+  })
+
+  const windowHandlers = useMemo(
+    () =>
+      reduce<WindowHandlerType, WindowHandlers>(
+        handlerTypes,
+        (obj, type) => {
+          obj[type] = () => fireHandler(type)
+          return obj
+        },
+        {} as WindowHandlers,
+      ),
+    [fireHandler],
+  )
+
+  const app = useMemo<AppContextProps>(
+    () => ({
+      openApp,
+      closeApp,
+      subscribe,
+      unSubscribe,
+      ...windowHandlers,
+    }),
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [],
+  )
+
+  useUpdateEffect(() => {
+    if (visible) {
+      onOpened()
+    }
+  }, [visible])
+
+  useUnmount(() => {
+    listeners.current.forEach(({ event, listener }) => {
+      eventEmitter.off(event, listener)
+    })
+  })
 
   return (
-    <AppContext.Provider value={methods.current}>
-      <Shortcut icon={icon} title={title} />
+    <AppContext.Provider value={app}>
+      <DesktopShortcut icon={icon} title={title} openApp={openApp} />
       {visible && (
         <Window
           id={id}
-          ref={windowRef}
           title={title}
+          ref={windowRef}
           defaultSize={defaultSize}
           defaultPosition={defaultPosition}
-          onOpened={onOpened}
-          onClosed={onClosed}
           onFullscreen={onFullscreen}
-          onMinimized={onMinimized}
-          onExpanded={onExpanded}
-          onExitedFullscreen={onExitedFullscreen}
+          onMinimize={onMinimize}
+          onExpand={onExpand}
+          onExitFullscreen={onExitFullscreen}
         >
           {children}
         </Window>

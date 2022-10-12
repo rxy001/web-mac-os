@@ -1,13 +1,9 @@
 import { configureStore } from "@reduxjs/toolkit"
 import appsSlice from "./appsSlice"
-import dockSlice from "./dockSlice"
-import topbarSlice from "./topbarSlice"
 
 const store = configureStore({
   reducer: {
     apps: appsSlice.reducer,
-    dock: dockSlice.reducer,
-    topbar: topbarSlice.reducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

@@ -8,32 +8,18 @@ import {
   useImperativeHandle,
   useMemo,
 } from "react"
-import {
-  useRnd,
-  useMemoizedFn,
-  useSetState,
-  useMount,
-  useUnmount,
-  useResizeObserver,
-} from "@chooks"
+import { useRnd, useMemoizedFn, useSetState, useResizeObserver } from "@chooks"
 import type { RndStyle } from "@chooks"
 import { createPortal } from "react-dom"
 import { animated } from "@react-spring/web"
 import { DOCK_HEIGHT, FULLSCREEN_DURATION, TOP_BAR_HEIGHT } from "@constants"
 import styles from "./css/window.less"
-import type { WindowProps, WindowHandler } from "./interface"
+import type { WindowProps, WindowRef } from "./interface"
 import WindowHeader from "./WindowHeader"
 import windowZIndex from "./windowZIndex"
 import BeforeState from "./BeforeState"
 import type { PreState } from "./BeforeState"
-import {
-  INITIAL_WIDTH,
-  INITIAL_HEIGHT,
-  INITIAL_Y,
-  INITIAL_X,
-  WINDOW_HEADER_HEIGHT,
-  MINIMIZE_DURATION,
-} from "./constants"
+import { WINDOW_HEADER_HEIGHT, MINIMIZE_DURATION } from "./constants"
 
 let Z_INDEX = 0
 
@@ -54,14 +40,12 @@ function Window(
     children,
     defaultSize,
     defaultPosition,
-    onOpened,
-    onClosed,
     onFullscreen,
-    onMinimized,
-    onExpanded,
-    onExitedFullscreen,
+    onMinimize,
+    onExpand,
+    onExitFullscreen,
   }: WindowProps,
-  ref?: ForwardedRef<WindowHandler>,
+  ref?: ForwardedRef<WindowRef>,
 ) {
   const [isFullscreen, setIsFullscreen] = useSetState(false)
 
@@ -70,13 +54,13 @@ function Window(
   const [isMaximized, setIsMaximized] = useState(false)
 
   const [rndStyle, dragBind, resizeBind, rndApi] = useRnd({
-    defaultSize: defaultSize ?? {
-      width: INITIAL_WIDTH,
-      height: INITIAL_HEIGHT,
-    },
+    defaultSize,
     defaultPosition: defaultPosition ?? {
-      x: INITIAL_X,
-      y: INITIAL_Y,
+      x: document.body.clientWidth / 2 - defaultSize.width / 2,
+      y: document.body.clientHeight / 2 - defaultSize.height / 2,
+    },
+    defaultStyle: {
+      opacity: 1,
     },
     enableResizing: !isFullscreen,
     bounds: () => ({
@@ -105,13 +89,13 @@ function Window(
     [rndStyle, style],
   )
 
-  const iconDOMInDockRef = useRef<HTMLElement | null>(null as any)
+  const dockShortcutRef = useRef<HTMLDivElement>(null as any)
 
-  const fullscreenBeforeStateRef = useRef(new BeforeState())
+  const fullscreenBeforeState = useRef(new BeforeState())
 
-  const maximizeBeforeStateRef = useRef(new BeforeState())
+  const maximizeBeforeState = useRef(new BeforeState())
 
-  const minimizeBeforeStateRef = useRef(new BeforeState())
+  const minimizeBeforeState = useRef(new BeforeState())
 
   const setZIndex = useMemoizedFn(() => {
     const maxZIndex = windowZIndex.maxZIndex()
@@ -154,7 +138,7 @@ function Window(
 
   const fullscreen = useMemoizedFn(() => {
     if (!isFullscreen) {
-      fullscreenBeforeStateRef.current.set({
+      fullscreenBeforeState.current.set({
         ...transformRndStyle(rndStyle),
         duration: FULLSCREEN_DURATION,
       })
@@ -177,8 +161,8 @@ function Window(
 
   const exitFullscreen = useMemoizedFn(() => {
     if (isFullscreen) {
-      restore(fullscreenBeforeStateRef.current.get())
-      setIsFullscreen(false, onExitedFullscreen)
+      restore(fullscreenBeforeState.current.get())
+      setIsFullscreen(false, onExitFullscreen)
     }
   })
 
@@ -193,7 +177,7 @@ function Window(
 
   const maximize = useMemoizedFn(() => {
     if (!isMaximized) {
-      maximizeBeforeStateRef.current.set({
+      maximizeBeforeState.current.set({
         ...transformRndStyle(rndStyle),
         duration: FULLSCREEN_DURATION,
       })
@@ -213,7 +197,7 @@ function Window(
 
   const exitMaximize = useMemoizedFn(() => {
     if (isMaximized) {
-      restore(maximizeBeforeStateRef.current.get())
+      restore(maximizeBeforeState.current.get())
       setIsMaximized(false)
     }
   })
@@ -222,8 +206,8 @@ function Window(
     let x = 0
     let y = 0
 
-    if (iconDOMInDockRef.current) {
-      ;({ x, y } = iconDOMInDockRef.current.getBoundingClientRect())
+    if (dockShortcutRef.current) {
+      ;({ x, y } = dockShortcutRef.current.getBoundingClientRect())
     } else {
       const { width, height } = getMaximizedSize()
       x = width / 2
@@ -231,7 +215,7 @@ function Window(
     }
 
     if (isActivated) {
-      minimizeBeforeStateRef.current.set({
+      minimizeBeforeState.current.set({
         ...transformRndStyle(rndStyle),
         duration: MINIMIZE_DURATION,
       })
@@ -248,45 +232,39 @@ function Window(
           setDisplay("none")
         },
       })
-      setIsActivated(false, onMinimized)
+      setIsActivated(false, onMinimize)
     }
   })
 
   const expand = useMemoizedFn(() => {
     if (!isActivated) {
-      restore(minimizeBeforeStateRef.current.get(), () => setDisplay("block"))
-      setIsActivated(true, onExpanded)
+      restore(minimizeBeforeState.current.get(), () => setDisplay("block"))
+      setIsActivated(true, onExpand)
       setZIndex()
     }
   })
 
-  // 这里不能直接传 iconDOMInDockRef, 可能是由于 @reduxjs/toolkit 在
-  // dispatch 或者 useSelector 时递归所有对象 freeze, 因此不能直接修改 iconDOMInDockRef.current
-  // 好坑，开始还以为是 react 的原因，不过 createElement 只 freeze element ,
-  // 属性值为对象依然可以重新赋值
-  const getIconDOM = useMemoizedFn((node) => {
-    iconDOMInDockRef.current = node
-  })
+  const getIsActivated = useMemoizedFn(() => isActivated)
+  const getIsFullscreen = useMemoizedFn(() => isFullscreen)
+  const getIsMaximized = useMemoizedFn(() => isMaximized)
 
-  // 不能使用 useLatest，useLatest 是重新赋值， ref 获取不到最新的值
-  const windowHandler = useRef<WindowHandler>({
-    isActivated,
-    isFullscreen,
-    isMaximized,
-    minimize,
-    expand,
-    fullscreen,
-    exitFullscreen,
-    maximize,
-    exitMaximize,
-    getIconDOM,
-  })
-
-  windowHandler.current.isActivated = isActivated
-  windowHandler.current.isFullscreen = isFullscreen
-  windowHandler.current.isMaximized = isMaximized
-
-  useImperativeHandle(ref, () => windowHandler.current, [windowHandler])
+  useImperativeHandle(
+    ref,
+    () => ({
+      minimize,
+      expand,
+      fullscreen,
+      exitFullscreen,
+      maximize,
+      exitMaximize,
+      dockShortcutRef,
+      isActivated: getIsActivated,
+      isFullscreen: getIsFullscreen,
+      isMaximized: getIsMaximized,
+    }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [],
+  )
 
   useResizeObserver(
     document.body,
@@ -301,8 +279,8 @@ function Window(
         })
 
         if (isMaximized) {
-          fullscreenBeforeStateRef.current.set({
-            ...fullscreenBeforeStateRef.current.get(),
+          fullscreenBeforeState.current.set({
+            ...fullscreenBeforeState.current.get(),
             ...getMaximizedSize(),
           })
         }
@@ -315,14 +293,6 @@ function Window(
     },
     200,
   )
-  useMount(() => {
-    onOpened?.()
-  })
-
-  useUnmount(() => {
-    onClosed?.()
-    iconDOMInDockRef.current = null
-  })
 
   return createPortal(
     <div key={id}>
@@ -334,11 +304,7 @@ function Window(
         })}
         {...resizeBind()}
       >
-        <WindowHeader
-          title={title}
-          windowHandler={windowHandler.current}
-          {...dragBind()}
-        />
+        <WindowHeader title={title} dragBind={dragBind} />
         {children}
       </animated.div>
     </div>,

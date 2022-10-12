@@ -8,7 +8,7 @@ export { default as Button } from "./Button"
 export type { ButtonProps } from "./Button"
 
 export { default as App } from "./App"
-export type { AppProps, WindowHandler, WindowProps, ShortcutProps } from "./App"
+export type { AppProps } from "./App"
 
 export { KeepAlive, AliveScope } from "./KeepAlive"
 

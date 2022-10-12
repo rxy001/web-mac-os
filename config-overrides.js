@@ -23,6 +23,7 @@ const paths = {
   chooks: resolveApp("src/chooks"), // custom Hooks,
   slice: resolveApp("src/redux"),
   constants: resolveApp("src/constants"),
+  eventEmitter: resolveApp("src/eventEmitter"),
 }
 
 module.exports = {
@@ -40,6 +41,7 @@ module.exports = {
       "@chooks": paths.chooks,
       "@slice": paths.slice,
       "@constants": paths.constants,
+      "@eventEmitter": paths.eventEmitter,
     }),
     modifyHtmlWebpackPlugin(),
     addWebpackPlugin(

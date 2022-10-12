@@ -1,0 +1,10 @@
+{
+  "*.{js,jsx,ts,tsx}": [
+    "npm run lint:script",
+    "npm run prettier"
+  ],
+  "src/*.less": [
+    "npm run lint:style",
+    "npm run prettier"
+  ]
+}

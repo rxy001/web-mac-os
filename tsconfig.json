@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "experimentalDecorators": true,
-    "target": "es5",
+    "target": "es2021",
     "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": true,
     "skipLibCheck": true,
@@ -24,7 +24,8 @@
       "@request": ["src/axios"],
       "@chooks": ["src/chooks"],
       "@slice/*": ["src/redux/*"],
-      "@constants": ["src/constants"]
+      "@constants": ["src/constants"],
+      "@eventEmitter": ["src/eventEmitter"]
     }
   },
   "include": ["src"],

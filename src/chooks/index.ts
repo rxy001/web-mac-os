@@ -2,7 +2,7 @@ export { default as usePreload } from "./usePreload"
 export type { UsePreloadProps } from "./usePreload"
 
 export { default as useRnd } from "./useRnd"
-export type { UseRndOptions, RndStyle } from "./useRnd"
+export type { UseRndOptions, RndStyle, RndBind, Position, Size } from "./useRnd"
 
 export { default as useUpdateEffect } from "./useUpdateEffect"
 
@@ -23,5 +23,3 @@ export { default as useForceUpdate } from "./useForceUpdate"
 export { default as useResizeObserver } from "./useResizeObserver"
 
 export { default as useLatest } from "./useLatest"
-
-export { default as useOnAppFullScreen } from "./useOnAppFullScreen"

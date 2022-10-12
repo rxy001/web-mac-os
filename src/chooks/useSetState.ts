@@ -10,15 +10,15 @@ export default function useSetState<S>(
   initialState: S | (() => S),
 ): [S, Dispatch<SetStateAction<S>>] {
   const [state, dispatch] = useState(initialState)
-  const callbackRef = useRef<Callback | undefined>()
+  const callback = useRef<Callback | undefined>()
 
-  const setState = useCallback((s: any, callback?: Callback) => {
+  const setState = useCallback((s: any, cb?: Callback) => {
     dispatch(s)
-    callbackRef.current = callback
+    callback.current = cb
   }, [])
 
   useLayoutEffect(() => {
-    callbackRef.current?.()
+    callback.current?.()
   }, [state])
 
   return [state, setState]

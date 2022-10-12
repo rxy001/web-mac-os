@@ -23,14 +23,17 @@ export interface Size {
   height: number
 }
 
-type Style = Position & Size & { opacity?: number }
+type DefaultStyle = {
+  opacity?: number
+}
+
+type Style = Position & Size & DefaultStyle
 
 export type RndStyle = SpringValues<Style>
 
 export type RndBind = (...args: any[]) => ReactDOMAttributes
 export interface UseRndOptions {
   // drag options
-  defaultPosition?: Position
   onDragStart?: UserHandlers["onDragStart"]
   onDrag?: UserHandlers["onDrag"]
   onDragEnd?: UserHandlers["onDragEnd"]
@@ -39,13 +42,17 @@ export interface UseRndOptions {
   disableDragging?: boolean
 
   // resize options
-  defaultSize?: Size
   minHeight?: number
   minWidth?: number
   onResizeStart?: UserHandlers["onDragStart"]
   onResize?: UserHandlers["onDrag"]
   onResizeEnd?: UserHandlers["onDragEnd"]
   enableResizing?: boolean
+
+  // common
+  defaultStyle?: DefaultStyle
+  defaultPosition?: Position
+  defaultSize?: Size
 }
 
 const container = document.body
@@ -71,12 +78,13 @@ const useRnd = ({
   enableResizing = false,
   minHeight = 100,
   minWidth = 100,
+
+  // common
+  defaultStyle = {},
   defaultSize = {
     width: 200,
     height: 200,
   },
-
-  // common
   defaultPosition = {
     x: 0,
     y: 0,
@@ -88,7 +96,7 @@ const useRnd = ({
   const [style, api] = useSpring<Style>(() => ({
     ...defaultPosition,
     ...defaultSize,
-    opacity: 1,
+    ...defaultStyle,
   }))
 
   const dragBind = useGesture(

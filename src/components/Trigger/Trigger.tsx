@@ -9,7 +9,7 @@ import type { TriggerProps, DOMEvents } from "./interface"
 
 type EventType = keyof DOMEvents
 
-const ALL_HANDLERS: EventType[] = [
+const handlerTypes: EventType[] = [
   "onClick",
   "onMouseDown",
   "onTouchStart",
@@ -51,9 +51,9 @@ function Trigger({
     }
   })
 
-  const handlerRef = useRef(
+  const handlers = useRef(
     reduce(
-      ALL_HANDLERS,
+      handlerTypes,
       (
         obj: {
           [key in EventType]?: (event: Event) => void
@@ -69,7 +69,7 @@ function Trigger({
 
   const getHandler = useMemoizedFn((type: EventType) => {
     if (children.props[type] && props[type]) {
-      return handlerRef.current[type]
+      return handlers.current[type]
     }
     return children.props[type] || props[type]
   })

@@ -1,14 +1,17 @@
 import { createSlice } from "@reduxjs/toolkit"
 import type { PayloadAction } from "@reduxjs/toolkit"
 import { omit } from "lodash"
-import type { WindowHandler, ShortcutProps } from "@brc"
 import type { RootState } from "./index"
 
 type Key = string
-type App = WindowHandler &
-  ShortcutProps & {
-    id: string
-  }
+type App = {
+  id: string
+  title: string
+  isMaximized: () => boolean
+  isFullscreen: () => boolean
+  isActivated: () => boolean
+  renderDockShortcut: (a?: number, b?: number) => JSX.Element
+}
 
 interface AppsState {
   running: {

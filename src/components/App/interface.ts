@@ -1,58 +1,78 @@
-import type { ReactNode, ComponentType, HTMLAttributes } from "react"
-import type { IconProps } from ".."
+import type { ComponentType, MutableRefObject, ReactElement } from "react"
+import type { RndBind, Position, Size } from "@chooks"
+import type { Listener } from "@eventEmitter"
+import type { IconProps } from "../index"
+import type { EventType } from "./hooks"
 
-export interface AppContextProps {
+export type UseApp = () => AppContextProps
+
+export interface AppContextProps extends WindowHandlers {
   closeApp: () => void
+  openApp: () => void
+  subscribe: (event: EventType, listener: Listener) => void
+  unSubscribe: (event: EventType, listener: Listener) => void
+}
+export interface AppProps {
+  icon: IconProps["icon"]
+  title: string
+  element: () => Promise<{ default: ComponentType }>
+  defaultSize: Size
+  defaultPosition?: Position
+}
+
+export interface DesktopShortcutProps {
+  icon: IconProps["icon"]
+  title: string
   openApp: () => void
 }
 
-export interface AppProps
-  extends Omit<WindowProps, "children" | "id" | "title">,
-    ShortcutProps {
-  element: ReactNode | (() => Promise<{ default: ComponentType }>)
-}
-
-export interface ShortcutProps {
-  icon: IconProps["icon"]
-  title: ReactNode
+export interface DockShortcutProps extends DesktopShortcutProps {
+  iconWrapperWidth?: number
+  iconSize?: number
+  id: string
 }
 
 export interface WindowProps {
   id: string
-  children: ReactNode
-  title: ReactNode
+  children: ReactElement
+  title: string
   style?: any
-  defaultSize?: {
-    width: number
-    height: number
-  }
-  defaultPosition?: {
-    x: number
-    y: number
-  }
+  defaultSize: Size
+  defaultPosition?: Position
   onFullscreen?: () => void
-  onExitedFullscreen?: () => void
-  onMinimized?: () => void
-  onExpanded?: () => void
-  onOpened?: () => void
-  onClosed?: () => void
+  onExitFullscreen?: () => void
+  onMinimize?: () => void
+  onExpand?: () => void
 }
 
-export interface WindowHandler {
-  isActivated: boolean
-  isFullscreen: boolean
-  isMaximized: boolean
-  getIconDOM: (p: any) => void
+export type WindowHandlerType =
+  | "fullscreen"
+  | "exitFullscreen"
+  | "minimize"
+  | "expand"
+  | "maximize"
+  | "exitMaximize"
+  | "isActivated"
+  | "isFullscreen"
+  | "isMaximized"
+
+export interface WindowHandlers {
   fullscreen: () => void
   exitFullscreen: () => void
-  minimize: (...p: any[]) => void
+  minimize: () => void
   expand: () => void
   maximize: () => void
   exitMaximize: () => void
+  isActivated: () => boolean
+  isFullscreen: () => boolean
+  isMaximized: () => boolean
 }
-export interface WindowHeaderProps
-  extends Omit<HTMLAttributes<HTMLDivElement>, "title"> {
-  title: ReactNode
+
+export interface WindowRef extends WindowHandlers {
+  dockShortcutRef: MutableRefObject<HTMLDivElement>
+}
+export interface WindowHeaderProps {
+  title: string
+  dragBind: RndBind
   className?: string
-  windowHandler: WindowHandler
 }

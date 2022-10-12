@@ -1,5 +1,5 @@
 import { memo, useEffect, useMemo, useState, useRef } from "react"
-import { useAppSelector, useMemoizedFn, useAppDispatch } from "@chooks"
+import { useAppSelector, useMemoizedFn } from "@chooks"
 import { map, size } from "lodash"
 import { useSpring, animated } from "@react-spring/web"
 import {
@@ -10,23 +10,13 @@ import {
 } from "@constants"
 import { createPortal } from "react-dom"
 import { selectApps } from "@slice/appsSlice"
-import { pushDock, removeDock } from "@slice/dockSlice"
-import Icon from "../Icon"
+import { App } from "../index"
 import styles from "./css/dock.less"
-import Tooltip from "../Tooltip"
-
-const iconStyle = {
-  width: ICON_SIZE,
-  height: ICON_SIZE,
-}
-
-const iconWrapperStyle = { width: ICON_WRAPPER_WIDTH }
 
 function Dock() {
   const runningApps = useAppSelector(selectApps)
-  const dispatch = useAppDispatch()
 
-  const prevAppCountRef = useRef(0)
+  const visible = useRef(true)
 
   const [springStyle, api] = useSpring(() => ({
     width: 0,
@@ -42,37 +32,72 @@ function Dock() {
     [springStyle, padding],
   )
 
+  const fullscreenApps = useRef(new Set<string>())
+
+  const prevAppCount = useRef(0)
+
   const hideDock = useMemoizedFn(() => {
-    api.start({
-      y: DOCK_HEIGHT,
-      opacity: 0,
-      config: {
-        duration: FULLSCREEN_DURATION,
-      },
-    })
+    if (visible.current) {
+      visible.current = false
+      api.start({
+        y: DOCK_HEIGHT,
+        opacity: 0,
+        config: {
+          duration: FULLSCREEN_DURATION,
+        },
+      })
+    }
   })
 
   const showDock = useMemoizedFn(() => {
-    api.start({
-      y: 0,
-      opacity: 1,
-      config: {
-        duration: FULLSCREEN_DURATION,
-      },
-    })
+    if (!visible.current) {
+      visible.current = true
+      api.start({
+        y: 0,
+        opacity: 1,
+        config: {
+          duration: FULLSCREEN_DURATION,
+        },
+      })
+    }
   })
 
-  useEffect(() => {
-    dispatch(pushDock({ hideDock, showDock }))
-    return () => {
-      dispatch(removeDock())
+  App.useAppSubscribe(App.EventType.Fullscreen, (appName) => {
+    if (!fullscreenApps.current.size) {
+      hideDock()
     }
-  }, [hideDock, showDock, dispatch])
+    fullscreenApps.current.add(appName)
+  })
+
+  App.useAppSubscribe(App.EventType.ExitFullScreen, (appName) => {
+    fullscreenApps.current.delete(appName)
+    if (!fullscreenApps.current.size) {
+      showDock()
+    }
+  })
+
+  App.useAppSubscribe(App.EventType.Minimize, (appName) => {
+    if (fullscreenApps.current.has(appName)) {
+      showDock()
+    }
+  })
+
+  App.useAppSubscribe(App.EventType.Expand, (appName) => {
+    if (fullscreenApps.current.has(appName)) {
+      hideDock()
+    }
+  })
+
+  App.useAppSubscribe(App.EventType.Close, (appName) => {
+    if (fullscreenApps.current.delete(appName)) {
+      showDock()
+    }
+  })
 
   useEffect(() => {
     const length = size(runningApps)
 
-    if (prevAppCountRef.current !== length) {
+    if (prevAppCount.current !== length) {
       if (length > 0) {
         setPadding(`0 ${(ICON_WRAPPER_WIDTH - ICON_SIZE) / 2}px`)
       } else if (!length) {
@@ -85,29 +110,16 @@ function Dock() {
           duration: 100,
         },
       })
-      prevAppCountRef.current = length
+
+      prevAppCount.current = length
     }
   }, [runningApps, api])
 
   return createPortal(
     <animated.div key="dock" style={mergedStyle} className={styles.dockWrapper}>
-      {map(runningApps, ({ icon, expand, title, id, getIconDOM }) => (
-        <Tooltip text={title} key={id}>
-          <div
-            ref={getIconDOM}
-            style={iconWrapperStyle}
-            className={styles.iconWrapper}
-          >
-            <Icon
-              image
-              style={iconStyle}
-              onClick={expand}
-              className={styles.icon}
-              icon={icon}
-            />
-          </div>
-        </Tooltip>
-      ))}
+      {map(runningApps, ({ renderDockShortcut }) =>
+        renderDockShortcut(ICON_WRAPPER_WIDTH, ICON_SIZE),
+      )}
     </animated.div>,
     document.body,
   )
