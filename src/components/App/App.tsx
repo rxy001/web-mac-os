@@ -5,6 +5,7 @@ import { connect } from "react-redux"
 import {
   useAppDispatch,
   useMemoizedFn,
+  useMount,
   useUnmount,
   useUpdateEffect,
 } from "@chooks"
@@ -74,7 +75,7 @@ function App({ element, title, icon, defaultSize, defaultPosition }: AppProps) {
       openApp={openApp}
       iconSize={iconSize}
       iconWrapperWidth={iconWrapperWidth}
-      ref={windowRef.current.dockShortcutRef}
+      ref={windowRef.current?.dockShortcutRef}
     />
   ))
 
@@ -92,30 +93,11 @@ function App({ element, title, icon, defaultSize, defaultPosition }: AppProps) {
   })
 
   const onOpened = useMemoizedFn(() => {
-    const { isActivated, isFullscreen, isMaximized } = windowRef.current
-    dispatch(
-      pushApp({
-        key: id,
-        app: {
-          id,
-          title,
-          isMaximized,
-          isFullscreen,
-          isActivated,
-          renderDockShortcut,
-        },
-      }),
-    )
     eventEmitter.emit(EventType.Opened, title)
   })
 
   const onClose = useMemoizedFn(() => {
     eventEmitter.emit(EventType.Close, title)
-    dispatch(
-      removeApp({
-        key: id,
-      }),
-    )
   })
 
   const onFullscreen = useMemoizedFn(() => {
@@ -174,6 +156,27 @@ function App({ element, title, icon, defaultSize, defaultPosition }: AppProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [],
   )
+
+  useMount(() => {
+    dispatch(
+      pushApp({
+        key: id,
+        app: {
+          id,
+          title,
+          renderDockShortcut,
+        },
+      }),
+    )
+  })
+
+  useUnmount(() => {
+    dispatch(
+      removeApp({
+        key: id,
+      }),
+    )
+  })
 
   useUpdateEffect(() => {
     if (visible) {

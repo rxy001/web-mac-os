@@ -7,20 +7,17 @@ type Key = string
 type App = {
   id: string
   title: string
-  isMaximized: () => boolean
-  isFullscreen: () => boolean
-  isActivated: () => boolean
   renderDockShortcut: (a?: number, b?: number) => JSX.Element
 }
 
 interface AppsState {
-  running: {
+  all: {
     [key: Key]: App
   }
 }
 
 const initialState: AppsState = {
-  running: {},
+  all: {},
 }
 
 const appsSlice = createSlice({
@@ -35,8 +32,8 @@ const appsSlice = createSlice({
       }>,
     ) => {
       const { key, app } = action.payload
-      state.running = {
-        ...state.running,
+      state.all = {
+        ...state.all,
         [key]: app,
       }
     },
@@ -47,14 +44,14 @@ const appsSlice = createSlice({
       }>,
     ) => {
       const { key } = action.payload
-      state.running = omit(state.running, [key])
+      state.all = omit(state.all, [key])
     },
   },
 })
 
 export const { pushApp, removeApp } = appsSlice.actions
 
-export const selectApps = (state: RootState) => state.apps.running
+export const selectApps = (state: RootState) => state.apps.all
 
 export const reducers = appsSlice.reducer
 

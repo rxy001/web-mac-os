@@ -1,4 +1,4 @@
-import { memo, useLayoutEffect, useMemo } from "react"
+import { memo, useEffect, useMemo } from "react"
 import { useSpring, animated } from "@react-spring/web"
 import type { ProgressProps } from "./interface"
 import styles from "./css/progress.less"
@@ -9,10 +9,15 @@ function Progress({
   trailColor,
   strokeWidth,
   strokeHeight,
+  springConfig,
   duration,
 }: ProgressProps) {
   const [style, api] = useSpring(() => ({
     width: "0%",
+    config: {
+      duration,
+      ...springConfig,
+    },
   }))
 
   const progressInnerStyle = useMemo(
@@ -32,14 +37,11 @@ function Progress({
     [strokeColor, strokeWidth, strokeHeight],
   )
 
-  useLayoutEffect(() => {
+  useEffect(() => {
     api.start({
       width: `${percent}%`,
-      config: {
-        duration,
-      },
     })
-  }, [percent, duration, api])
+  }, [percent, springConfig, api])
 
   return (
     <div className={styles.progressOuter} style={progressOuterStyle}>

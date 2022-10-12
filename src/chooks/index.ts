@@ -23,3 +23,5 @@ export { default as useForceUpdate } from "./useForceUpdate"
 export { default as useResizeObserver } from "./useResizeObserver"
 
 export { default as useLatest } from "./useLatest"
+
+export { default as useInterval } from "./useInterval"

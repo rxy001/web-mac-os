@@ -5,8 +5,10 @@ import { useSpring, animated } from "@react-spring/web"
 import { useMemoizedFn } from "@chooks"
 import { App } from "../index"
 import styles from "./css/topBar.less"
+import type { TopbarProps } from "./interface"
+import { Clock, Bluetooth, Wifi, Volume, ActionCenter } from "./Widgets"
 
-function Topbar() {
+function Topbar({ left, right }: TopbarProps) {
   const visible = useRef(true)
 
   const [style, api] = useSpring(() => ({
@@ -79,7 +81,15 @@ function Topbar() {
 
   return createPortal(
     <animated.div key="topBar" style={style} className={styles.topBar}>
-      <div />
+      <div className={styles.topBarLeft}>{left}</div>
+      <div className={styles.topBarRight}>
+        {right}
+        <Volume />
+        <Bluetooth />
+        <Wifi />
+        <ActionCenter />
+        <Clock />
+      </div>
     </animated.div>,
     document.body,
   )

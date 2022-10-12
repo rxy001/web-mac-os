@@ -1,3 +1,5 @@
+import type { SpringConfig } from "@react-spring/web"
+
 export interface ProgressProps {
   percent?: number
   strokeColor?: string
@@ -5,4 +7,5 @@ export interface ProgressProps {
   strokeWidth?: number
   duration?: number
   strokeHeight?: number
+  springConfig?: SpringConfig
 }
