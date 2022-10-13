@@ -1,17 +1,11 @@
 import {
   forwardRef,
-  useLayoutEffect,
   useImperativeHandle,
+  useLayoutEffect,
   useRef,
   useState,
 } from "react"
-import {
-  useMemoizedFn,
-  useMount,
-  useForceUpdate,
-  useResizeObserver,
-  useUnmount,
-} from "@chooks"
+import { useMemoizedFn, useMount, useResizeObserver, useUnmount } from "@chooks"
 import { ceil, isEqual, max } from "lodash"
 import { isDOMVisible } from "@utils"
 import styles from "./css/trigger.less"
@@ -20,8 +14,6 @@ import type { PopupProps } from "./interface"
 
 const Popup = forwardRef<HTMLDivElement, PopupProps>(
   ({ visible, children, getTriggerDOMNode, placement = "top" }, ref) => {
-    const forceUpdate = useForceUpdate()
-
     const [position, setPosition] = useState({
       left: 0,
       top: 0,
@@ -29,12 +21,12 @@ const Popup = forwardRef<HTMLDivElement, PopupProps>(
 
     const prevPosition = useRef(position)
 
-    const triggerRef = useRef(getTriggerDOMNode())
+    const triggerRef = useRef<HTMLElement>()
 
-    const popupRef = useRef<HTMLDivElement>(null as any)
+    const motionRef = useRef<HTMLDivElement>(null as any)
 
     const calcPosition = useMemoizedFn(() => {
-      if (triggerRef.current && popupRef.current) {
+      if (triggerRef.current && motionRef.current) {
         const {
           width: triggerWidth,
           height: triggerHeight,
@@ -43,7 +35,7 @@ const Popup = forwardRef<HTMLDivElement, PopupProps>(
         } = triggerRef.current.getBoundingClientRect()
 
         const { width: popupWidth, height: popupHeight } =
-          popupRef.current.getBoundingClientRect()
+          motionRef.current.getBoundingClientRect()
 
         const newPosition = {
           left: max([triggerLeft + (triggerWidth - popupWidth) / 2, 0]) as any,
@@ -72,23 +64,26 @@ const Popup = forwardRef<HTMLDivElement, PopupProps>(
       return position
     })
 
-    useResizeObserver(triggerRef.current, () => {
-      isDOMVisible(popupRef.current) && setPosition(calcPosition())
+    useResizeObserver(getTriggerDOMNode, () => {
+      isDOMVisible(motionRef.current) && setPosition(calcPosition())
     })
 
-    useResizeObserver(popupRef.current, () => {
-      isDOMVisible(popupRef.current) && setPosition(calcPosition())
+    useResizeObserver(motionRef, () => {
+      isDOMVisible(motionRef.current) && setPosition(calcPosition())
     })
 
-    // 当 trigger 发生位移时需重新计算 position
-    // ResizeObserver 只能监测 size 的变化
+    useImperativeHandle(ref, () => motionRef.current, [])
+
+    useMount(() => {
+      triggerRef.current = getTriggerDOMNode()
+    })
+
+    // 如果是初次显示 useResizeObserver 调用时机太慢，导致闪烁
     useLayoutEffect(() => {
-      setPosition(calcPosition())
-    }, [visible, calcPosition])
-
-    useImperativeHandle(ref, () => popupRef.current, [])
-
-    useMount(forceUpdate)
+      if (visible) {
+        setPosition(calcPosition)
+      }
+    }, [calcPosition, visible])
 
     useUnmount(() => {
       triggerRef.current = null as any
@@ -98,10 +93,9 @@ const Popup = forwardRef<HTMLDivElement, PopupProps>(
       <div className={styles.popup} key="popup">
         <Motion
           className={styles.popupWrapper}
-          ref={popupRef}
+          ref={motionRef}
           style={position}
           visible={visible}
-          finishDelay={200}
         >
           {children}
         </Motion>

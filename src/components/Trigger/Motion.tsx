@@ -4,15 +4,17 @@ import {
   useImperativeHandle,
   useMemo,
   useLayoutEffect,
+  useContext,
 } from "react"
-import { useUnmount, useDebounceFn } from "@chooks"
+import { useUnmount, useDebounceFn, useMemoizedFn } from "@chooks"
 import { useSpring, animated } from "@react-spring/web"
-import type { MotionProps, PrevMotion } from "./interface"
-
-let prevMotion: PrevMotion = null
+import type { MotionProps, CurrentMotion } from "./interface"
+import { GroupContext } from "./context"
 
 const Motion = forwardRef<HTMLDivElement, MotionProps>(
-  ({ visible, children, style, className, startDelay, finishDelay }, ref) => {
+  ({ visible, children, style, className }, ref) => {
+    const groupContext = useContext(GroupContext)
+
     const [springStyle, api] = useSpring(() => ({
       opacity: 0,
     }))
@@ -28,15 +30,18 @@ const Motion = forwardRef<HTMLDivElement, MotionProps>(
       if (nodeRef.current) {
         nodeRef.current.style.display = display
       }
-    }, 1000)
+    }, 300)
 
-    const Motion = useMemo(
+    const Motion = useMemo<CurrentMotion>(
       () => ({
         cancel: () => {
           api.start({
-            immediate: true,
+            cancel: true,
+          })
+          api.start({
             opacity: 0,
-            onRest() {
+            immediate: true,
+            onRest: () => {
               delaySetDisplay("none")
             },
           })
@@ -45,15 +50,26 @@ const Motion = forwardRef<HTMLDivElement, MotionProps>(
       [delaySetDisplay, api],
     )
 
-    useLayoutEffect(() => {
-      if (visible) {
-        // 当上个隐藏动画还未完成时，快速隐藏
-        if (prevMotion !== Motion) {
-          prevMotion?.cancel()
+    const onMotionFinished = useMemoizedFn(({ finished }) => {
+      // 新的动画会导致旧的动画提前调用 onRest
+      // finished 当为true时，动画既不会提前取消也不会提前停止。
+      if (finished) {
+        delaySetDisplay("none")
+        if (groupContext) {
+          groupContext.setCurrentMotion(null)
         }
-        prevMotion = Motion
       }
-    }, [visible, Motion])
+    })
+
+    useLayoutEffect(() => {
+      if (groupContext && visible) {
+        // 当上个隐藏动画还未完成时，快速隐藏
+        if (groupContext.currentMotion !== Motion) {
+          groupContext.currentMotion?.cancel()
+        }
+        groupContext.setCurrentMotion(Motion)
+      }
+    }, [visible, Motion, groupContext])
 
     useLayoutEffect(() => {
       if (visible) {
@@ -62,24 +78,17 @@ const Motion = forwardRef<HTMLDivElement, MotionProps>(
         api.start({
           opacity: 1,
           immediate: true,
-          delay: startDelay,
         })
       } else {
         api.start({
           opacity: 0,
-          delay: finishDelay,
           config: {
             duration: 200,
           },
-          onRest: ({ finished }) => {
-            if (finished) {
-              delaySetDisplay("none")
-              prevMotion = null
-            }
-          },
+          onRest: onMotionFinished,
         })
       }
-    }, [visible, delaySetDisplay, finishDelay, startDelay, api])
+    }, [api, visible, delaySetDisplay, onMotionFinished])
 
     useImperativeHandle(ref, () => nodeRef.current, [])
 

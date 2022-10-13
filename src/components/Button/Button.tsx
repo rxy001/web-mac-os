@@ -1,19 +1,12 @@
-import { memo } from "react"
+import { forwardRef } from "react"
 import classNames from "classnames"
 import styles from "./css/button.less"
 import type { ButtonProps } from "./interface"
 
-function Button({
-  onClick,
-  children,
-  style,
-  type,
-  icon,
-  className,
-  ...props
-}: ButtonProps) {
-  return (
+const Button = forwardRef<HTMLButtonElement, ButtonProps>(
+  ({ onClick, children, style, type, icon, className, ...props }, ref) => (
     <button
+      ref={ref}
       onClick={onClick}
       style={style}
       className={classNames(styles.button, type && styles[type], className)}
@@ -22,10 +15,10 @@ function Button({
       {icon && icon}
       <span>{children}</span>
     </button>
-  )
-}
+  ),
+)
 
-export default memo(Button)
+export default Button
 
 Button.defaultProps = {
   type: "default",

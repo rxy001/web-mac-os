@@ -1,6 +1,6 @@
 import classNames from "classnames"
 import { useState, useEffect, forwardRef } from "react"
-import { useMemoizedFn } from "@chooks"
+import { useMemoizedFn, useDebounceFn } from "@chooks"
 import type { IconProps } from "./interface"
 import styles from "./css/icon.less"
 
@@ -22,26 +22,31 @@ const Icon = forwardRef<HTMLSpanElement, IconProps>(
     const [maskVisible, setMaskVisible] = useState(false)
     const [isPress, setIsPress] = useState(false)
 
-    const onMouseDown = useMemoizedFn(() => {
+    const onMouseDown = useDebounceFn(() => {
       if (mask) {
         setIsPress(true)
         setMaskVisible(true)
       }
-    })
+    }, 30)
 
     const onMouseUp = useMemoizedFn(() => {
       if (mask) {
+        onMouseDown.cancel()
         setIsPress(false)
         setMaskVisible(false)
       }
+    })
+
+    const onMouseEnter = useMemoizedFn(() => {
+      mask && isPress && setMaskVisible(true)
     })
 
     const onMouseLeave = useMemoizedFn(() => {
       mask && isPress && setMaskVisible(false)
     })
 
-    const onMouseEnter = useMemoizedFn(() => {
-      mask && isPress && setMaskVisible(true)
+    const onContextMenu = useMemoizedFn((e) => {
+      e.preventDefault()
     })
 
     useEffect(() => {
@@ -61,6 +66,7 @@ const Icon = forwardRef<HTMLSpanElement, IconProps>(
         onMouseUp={onMouseUp}
         onMouseLeave={onMouseLeave}
         onMouseEnter={onMouseEnter}
+        onContextMenu={onContextMenu}
         {...props}
       >
         {image ? (

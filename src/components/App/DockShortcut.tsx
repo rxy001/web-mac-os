@@ -1,10 +1,10 @@
 import { forwardRef, useMemo } from "react"
-import { Tooltip, Icon } from "../index"
+import { Icon } from "../index"
 import styles from "./css/app.less"
 import type { DockShortcutProps } from "./interface"
 
 const DockShortcut = forwardRef<HTMLDivElement, DockShortcutProps>(
-  ({ id, title, icon, iconWrapperWidth, iconSize, openApp }, ref) => {
+  ({ icon, iconWrapperWidth, iconSize, openApp, ...props }, ref) => {
     const iconStyle = useMemo(
       () => ({
         width: iconSize,
@@ -19,11 +19,14 @@ const DockShortcut = forwardRef<HTMLDivElement, DockShortcutProps>(
     )
 
     return (
-      <Tooltip text={title} key={id}>
-        <div className={styles.iconWrapper} style={iconWrapperStyle} ref={ref}>
-          <Icon image style={iconStyle} onClick={openApp} icon={icon} />
-        </div>
-      </Tooltip>
+      <div
+        className={styles.iconWrapper}
+        style={iconWrapperStyle}
+        {...props}
+        ref={ref}
+      >
+        <Icon image style={iconStyle} onClick={openApp} icon={icon} />
+      </div>
     )
   },
 )

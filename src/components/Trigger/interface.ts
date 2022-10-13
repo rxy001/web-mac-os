@@ -15,13 +15,14 @@ export type DOMEvents = Omit<
 export interface TriggerProps extends DOMEvents {
   children: ReactElement
   popup?: ReactElement
-  actions?: ActionType | ActionType[]
+  actions: ActionType | ActionType[]
   showActions?: ActionType[]
   hideActions?: ActionType[]
   defaultPopupVisible?: boolean
-
   getTriggerDOMNode?: () => HTMLElement
   popupPlacement?: "top" | "bottom"
+  visible?: boolean
+  onVisibleChange?: (p: boolean) => void
 }
 
 export interface PopupProps {
@@ -36,10 +37,19 @@ export interface MotionProps {
   visible?: boolean
   className?: string
   style?: CSSProperties
-  startDelay?: number
-  finishDelay?: number
 }
 
-export type PrevMotion = {
+export type CurrentMotion = {
   cancel: (...p: any[]) => void
 } | null
+
+export type CurrentPopup = {
+  close: () => void
+} | null
+
+export interface GroupContextType {
+  currentPopup: CurrentPopup
+  currentMotion: CurrentMotion
+  setCurrentPopup: (e: CurrentPopup) => void
+  setCurrentMotion: (e: CurrentMotion) => void
+}

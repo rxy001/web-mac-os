@@ -10,7 +10,7 @@ import {
 } from "@constants"
 import { createPortal } from "react-dom"
 import { selectApps } from "@slice/appsSlice"
-import { App } from "../index"
+import { App, Tooltip } from "../index"
 import styles from "./css/dock.less"
 
 function Dock() {
@@ -117,9 +117,13 @@ function Dock() {
 
   return createPortal(
     <animated.div key="dock" style={mergedStyle} className={styles.dockWrapper}>
-      {map(runningApps, ({ renderDockShortcut }) =>
-        renderDockShortcut(ICON_WRAPPER_WIDTH, ICON_SIZE),
-      )}
+      <Tooltip.Group>
+        {map(runningApps, ({ title, id, renderDockShortcut }) => (
+          <Tooltip text={title} key={id}>
+            {renderDockShortcut(ICON_WRAPPER_WIDTH, ICON_SIZE)}
+          </Tooltip>
+        ))}
+      </Tooltip.Group>
     </animated.div>,
     document.body,
   )

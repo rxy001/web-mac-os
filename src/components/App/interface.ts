@@ -26,10 +26,12 @@ export interface DesktopShortcutProps {
   openApp: () => void
 }
 
-export interface DockShortcutProps extends DesktopShortcutProps {
+export interface DockShortcutProps {
   iconWrapperWidth?: number
   iconSize?: number
   id: string
+  openApp: () => void
+  icon: IconProps["icon"]
 }
 
 export interface WindowProps {

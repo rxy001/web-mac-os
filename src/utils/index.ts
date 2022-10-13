@@ -10,3 +10,5 @@ export { default as composeRef } from "./composeRef"
 export { default as isDOMVisible } from "./isDOMVisible"
 
 export { default as noop } from "./noop"
+
+export { default as addEventListener } from "./addEventListener"

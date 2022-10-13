@@ -71,7 +71,6 @@ function App({ element, title, icon, defaultSize, defaultPosition }: AppProps) {
       id={id}
       key={id}
       icon={icon}
-      title={title}
       openApp={openApp}
       iconSize={iconSize}
       iconWrapperWidth={iconWrapperWidth}

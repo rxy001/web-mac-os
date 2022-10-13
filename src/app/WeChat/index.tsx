@@ -8,7 +8,7 @@ const defaultSize = {
   height: 200,
 }
 
-export default function WeChat() {
+export default function Application() {
   return (
     <App
       defaultSize={defaultSize}
