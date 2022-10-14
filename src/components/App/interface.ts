@@ -6,19 +6,26 @@ import type { EventType } from "./hooks"
 
 export type UseApp = () => AppContextProps
 
+interface CommonType {
+  minHeight?: number
+  minWidth?: number
+  maxHeight?: number
+  maxWidth?: number
+  defaultSize: Size
+  defaultPosition?: Position
+  title: string
+}
+
 export interface AppContextProps extends WindowHandlers {
   closeApp: () => void
   openApp: () => void
   subscribe: (event: EventType, listener: Listener) => void
   unSubscribe: (event: EventType, listener: Listener) => void
 }
-export interface AppProps {
+export interface AppProps extends CommonType {
   icon: IconProps["icon"]
   iconType?: "round" | "circle"
-  title: string
   element: () => Promise<{ default: ComponentType }>
-  defaultSize: Size
-  defaultPosition?: Position
 }
 
 export interface DesktopShortcutProps {
@@ -37,13 +44,10 @@ export interface DockShortcutProps {
   iconType: AppProps["iconType"]
 }
 
-export interface WindowProps {
+export interface WindowProps extends CommonType {
   id: string
   children: ReactElement
-  title: string
   style?: any
-  defaultSize: Size
-  defaultPosition?: Position
   onFullscreen?: () => void
   onExitFullscreen?: () => void
   onMinimize?: () => void

@@ -38,6 +38,10 @@ function Window(
     id,
     title,
     children,
+    minHeight,
+    minWidth,
+    maxHeight,
+    maxWidth,
     defaultSize,
     defaultPosition,
     onFullscreen,
@@ -55,6 +59,10 @@ function Window(
 
   const [rndStyle, dragBind, resizeBind, rndApi] = useRnd({
     defaultSize,
+    minHeight,
+    minWidth,
+    maxHeight,
+    maxWidth,
     defaultPosition: defaultPosition ?? {
       x: document.body.clientWidth / 2 - defaultSize.width / 2,
       y: document.body.clientHeight / 2 - defaultSize.height / 2,
@@ -63,10 +71,14 @@ function Window(
       opacity: 1,
     },
     enableResizing: !isFullscreen,
-    bounds: () => ({
+    dragBounds: {
       top: TOP_BAR_HEIGHT,
       bottom: window.innerHeight - WINDOW_HEADER_HEIGHT,
-    }),
+    },
+    resizeBounds: {
+      top: TOP_BAR_HEIGHT,
+      bottom: window.innerHeight - DOCK_HEIGHT,
+    },
     onDrag({ event }) {
       event.stopPropagation()
       setIsMaximized(false)

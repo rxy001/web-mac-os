@@ -5,12 +5,14 @@ import { memo, useRef } from "react"
 import { useMount } from "@chooks"
 import styles from "./css/github.less"
 
+const isEnvDevelopment = process.env.NODE_ENV === "development"
+
 function Github() {
   const { x } = useSpring({ from: { x: 0 }, x: 1, config: { duration: 1000 } })
 
   const ref = useRef<HTMLAnchorElement>(null)
 
-  useMount(() => ref.current?.click())
+  useMount(() => !isEnvDevelopment && ref.current?.click())
 
   return (
     <div className={styles.wrapper}>

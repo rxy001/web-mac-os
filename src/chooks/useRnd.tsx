@@ -6,7 +6,7 @@ import type {
   Handler,
 } from "@use-gesture/react"
 import { useCallback, useEffect, useRef } from "react"
-import { floor, forEach, min } from "lodash"
+import { floor, forEach, min, max } from "lodash"
 import type { SpringValues, SpringRef } from "@react-spring/web"
 import { useSpring } from "@react-spring/web"
 import type { ReactDOMAttributes } from "@use-gesture/react/dist/declarations/src/types"
@@ -29,6 +29,13 @@ type DefaultStyle = {
 
 type Style = Position & Size & DefaultStyle
 
+type Bounds = {
+  top?: number
+  bottom?: number
+  left?: number
+  right?: number
+}
+
 export type RndStyle = SpringValues<Style>
 
 export type RndBind = (...args: any[]) => ReactDOMAttributes
@@ -38,24 +45,26 @@ export interface UseRndOptions {
   onDrag?: UserHandlers["onDrag"]
   onDragEnd?: UserHandlers["onDragEnd"]
   axis?: CoordinatesConfig["axis"]
-  bounds?: CoordinatesConfig["bounds"]
   disableDragging?: boolean
+  dragBounds?: Bounds
 
   // resize options
-  minHeight?: number
   minWidth?: number
+  minHeight?: number
+  maxWidth?: number
+  maxHeight?: number
   onResizeStart?: UserHandlers["onDragStart"]
   onResize?: UserHandlers["onDrag"]
   onResizeEnd?: UserHandlers["onDragEnd"]
   enableResizing?: boolean
+  resizeBounds?: Bounds
 
   // common
+  bounds?: Bounds
   defaultStyle?: DefaultStyle
   defaultPosition?: Position
   defaultSize?: Size
 }
-
-const container = document.body
 
 const gestureTransform: (v: Vector2) => Vector2 = ([x, y]) => [
   floor(x),
@@ -68,18 +77,22 @@ const useRnd = ({
   onDrag,
   onDragEnd,
   axis,
-  bounds,
   disableDragging,
+  dragBounds,
 
   // resize options
   onResizeStart,
   onResize,
   onResizeEnd,
   enableResizing = false,
-  minHeight = 100,
-  minWidth = 100,
+  minHeight = 200,
+  minWidth = 200,
+  maxWidth,
+  maxHeight,
+  resizeBounds,
 
   // common
+  bounds,
   defaultStyle = {},
   defaultSize = {
     width: 200,
@@ -103,27 +116,24 @@ const useRnd = ({
     {
       // 直接将参数 onDragStart 传给 useGesture 报错 。。。。。 传 undefined 不成～
       onDragStart(...rest) {
-        if (!disableDragging) {
-          onDragStart?.(...rest)
-        }
+        onDragStart?.(...rest)
       },
       onDrag({ event, offset, dragging, ...rest }) {
-        if (!disableDragging && dragging) {
+        if (dragging) {
           const [x, y] = offset
           api.start({ x, y, immediate: true })
           onDrag?.({ dragging, offset, event, ...rest })
         }
       },
       onDragEnd(...rest) {
-        if (!disableDragging) {
-          onDragEnd?.(...rest)
-        }
+        onDragEnd?.(...rest)
       },
     },
     {
       drag: {
         axis,
-        bounds,
+        bounds: dragBounds ?? bounds,
+        enabled: !disableDragging,
         transform: gestureTransform,
         from: () => [style.x.get(), style.y.get()],
         filterTaps: true,
@@ -131,15 +141,16 @@ const useRnd = ({
     },
   )
 
-  const memoizedSize = useRef({
+  const memoizedRect = useRef({
     width: defaultSize.width,
     height: defaultSize.height,
+    x: defaultPosition.x,
+    y: defaultPosition.y,
   })
 
   const generateSpringProps = useCallback<Handler<"drag">>(
     ({
       event,
-      lastOffset: [lastOffsetX, lastOffsetY],
       offset: [offsetX, offsetY],
       movement: [movementX, movementY],
     }) => {
@@ -149,48 +160,47 @@ const useRnd = ({
         width?: number
         height?: number
       } = {}
+      const {
+        width: memoizedWidth,
+        height: memoizedHeight,
+        x: memoizedX,
+        y: memoizedY,
+      } = memoizedRect.current
 
       const target = event.target as HTMLElement
       const { position } = target.dataset
 
-      const { width: memoizedWidth, height: memoizedHeight } =
-        memoizedSize.current
-
       function dragTop() {
-        // 向下拖动时，y的最大值边界
-        props.y = min([offsetY, lastOffsetY + memoizedHeight - minHeight])
-
-        // 向上拖动时，高度最大值边界
+        // 向下拖动时，y的最大值，最小高度
+        props.y = min([offsetY, memoizedY + memoizedHeight - minHeight])
         props.height = min([
-          memoizedHeight - movementY,
-          lastOffsetY + memoizedHeight,
+          max([memoizedHeight - movementY, minHeight]),
+          maxHeight,
         ])
       }
 
       function dragRight() {
-        // 向右拖动时，宽度最大值边界
+        // 向右拖动时，最小宽度
         props.width = min([
-          memoizedWidth + movementX,
-          container.clientWidth - lastOffsetX,
+          max([memoizedWidth + movementX, minHeight]),
+          maxWidth,
         ])
       }
 
       function dragBottom() {
-        // 向下拖动时，高度最大值边界
+        // 向上拖动时，最小高度
         props.height = min([
-          memoizedHeight + movementY,
-          container.clientHeight - lastOffsetY,
+          max([memoizedHeight + movementY, minHeight]),
+          maxHeight,
         ])
       }
 
       function dragLeft() {
-        // 向右拖动时，y的最大值边界
-        props.x = min([offsetX, lastOffsetX + memoizedWidth - minWidth])
-
-        // 向左拖动时，宽度最大值边界
+        // 向右拖动时，y的最大值，最小宽度
+        props.x = min([offsetX, memoizedX + memoizedWidth - minWidth])
         props.width = min([
-          memoizedWidth - movementX,
-          lastOffsetX + memoizedWidth,
+          max([memoizedWidth - movementX, minHeight]),
+          maxWidth,
         ])
       }
 
@@ -227,42 +237,25 @@ const useRnd = ({
           break
       }
 
-      // 最小值边界处理
-      if (props.height && props.height < minHeight) {
-        props.height = minHeight
-      }
-
-      if (props.width && props.width < minWidth) {
-        props.width = minWidth
-      }
-
-      if (props.x && props.x < 0) {
-        props.x = 0
-      }
-
-      if (props.y && props.y < 0) {
-        props.y = 0
-      }
-
       return props
     },
-    [minWidth, minHeight],
+    [maxHeight, maxWidth, minHeight, minWidth],
   )
 
   const resizeBindImpl = useGesture(
     {
       onDragStart(...rest) {
-        if (enableResizing) {
-          memoizedSize.current = {
-            width: style.width.get(),
-            height: style.height.get(),
-          }
-          onResizeStart?.(...rest)
+        memoizedRect.current = {
+          width: style.width.get(),
+          height: style.height.get(),
+          x: style.x.get(),
+          y: style.y.get(),
         }
+        onResizeStart?.(...rest)
       },
 
       onDrag({ dragging, ...restArgu }) {
-        if (enableResizing && dragging) {
+        if (dragging) {
           const props = generateSpringProps({ dragging, ...restArgu })
           api.start({
             ...props,
@@ -272,17 +265,35 @@ const useRnd = ({
         }
       },
       onDragEnd(...rest) {
-        if (enableResizing) {
-          onResizeEnd?.(...rest)
-        }
+        onResizeEnd?.(...rest)
       },
     },
     {
       drag: {
-        from: () => [style.x.get(), style.y.get()],
+        bounds: bounds ?? resizeBounds,
+        enabled: enableResizing,
+        from: (state) => {
+          const { position } = (state.target as HTMLElement).dataset
+          if (
+            position === "left" ||
+            position === "top" ||
+            position === "topLeft"
+          ) {
+            return [style.x.get(), style.y.get()]
+          }
+          if (position === "topRight") {
+            return [style.x.get() + style.width.get(), style.y.get()]
+          }
+          if (position === "bottomLeft") {
+            return [style.x.get(), style.y.get() + style.height.get()]
+          }
+          return [
+            style.x.get() + style.width.get(),
+            style.y.get() + style.height.get(),
+          ]
+        },
         transform: gestureTransform,
         filterTaps: true,
-        bounds,
       },
     },
   )

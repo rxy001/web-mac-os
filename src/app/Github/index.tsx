@@ -17,6 +17,8 @@ function Application() {
       iconType="circle"
       title="View Github"
       element={importTypora}
+      minHeight={300}
+      minWidth={300}
     />
   )
 }

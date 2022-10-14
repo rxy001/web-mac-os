@@ -42,6 +42,10 @@ function App({
   element,
   title,
   icon,
+  minHeight,
+  minWidth,
+  maxHeight,
+  maxWidth,
   defaultSize,
   defaultPosition,
   iconType = "round",
@@ -210,6 +214,10 @@ function App({
           id={id}
           title={title}
           ref={windowRef}
+          minHeight={minHeight}
+          minWidth={minWidth}
+          maxHeight={maxHeight}
+          maxWidth={maxWidth}
           defaultSize={defaultSize}
           defaultPosition={defaultPosition}
           onFullscreen={onFullscreen}
