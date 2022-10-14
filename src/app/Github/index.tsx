@@ -1,19 +1,21 @@
 import { App } from "@brc"
 import { memo } from "react"
-import typoraImg from "@assets/typora.png"
+import githubImg from "@assets/github.svg"
 
-const importTypora = () => import("./Typora")
+const importTypora = () => import("./Github")
 
 const defaultSize = {
   width: 500,
-  height: 200,
+  height: 300,
 }
+
 function Application() {
   return (
     <App
       defaultSize={defaultSize}
-      icon={typoraImg}
-      title="typora"
+      icon={githubImg}
+      iconType="circle"
+      title="View Github"
       element={importTypora}
     />
   )

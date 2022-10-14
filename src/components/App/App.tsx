@@ -38,7 +38,14 @@ const handlerTypes: WindowHandlerType[] = [
   "isMaximized",
 ]
 
-function App({ element, title, icon, defaultSize, defaultPosition }: AppProps) {
+function App({
+  element,
+  title,
+  icon,
+  defaultSize,
+  defaultPosition,
+  iconType = "round",
+}: AppProps) {
   const dispatch = useAppDispatch()
 
   const eventEmitter = useEventEmitter()
@@ -71,6 +78,7 @@ function App({ element, title, icon, defaultSize, defaultPosition }: AppProps) {
       id={id}
       key={id}
       icon={icon}
+      iconType={iconType}
       openApp={openApp}
       iconSize={iconSize}
       iconWrapperWidth={iconWrapperWidth}
@@ -191,7 +199,12 @@ function App({ element, title, icon, defaultSize, defaultPosition }: AppProps) {
 
   return (
     <AppContext.Provider value={app}>
-      <DesktopShortcut icon={icon} title={title} openApp={openApp} />
+      <DesktopShortcut
+        icon={icon}
+        iconType={iconType}
+        title={title}
+        openApp={openApp}
+      />
       {visible && (
         <Window
           id={id}

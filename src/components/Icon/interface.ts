@@ -1,14 +1,18 @@
-import type { CSSProperties, MouseEventHandler, SVGAttributes } from "react"
+import type {
+  CSSProperties,
+  MouseEventHandler,
+  SVGAttributes,
+  ReactNode,
+} from "react"
 
 export interface IconProps
   extends Omit<
     SVGAttributes<HTMLSpanElement>,
     "clasName" | "onClick" | "style" | "mask"
   > {
-  icon: string
+  icon?: string | ReactNode
   style?: CSSProperties
   className?: string
-  image?: boolean
   mask?: boolean
   maskStyle?: CSSProperties
   maskClassName?: string

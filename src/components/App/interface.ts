@@ -14,6 +14,7 @@ export interface AppContextProps extends WindowHandlers {
 }
 export interface AppProps {
   icon: IconProps["icon"]
+  iconType?: "round" | "circle"
   title: string
   element: () => Promise<{ default: ComponentType }>
   defaultSize: Size
@@ -24,6 +25,7 @@ export interface DesktopShortcutProps {
   icon: IconProps["icon"]
   title: string
   openApp: () => void
+  iconType: AppProps["iconType"]
 }
 
 export interface DockShortcutProps {
@@ -32,6 +34,7 @@ export interface DockShortcutProps {
   id: string
   openApp: () => void
   icon: IconProps["icon"]
+  iconType: AppProps["iconType"]
 }
 
 export interface WindowProps {

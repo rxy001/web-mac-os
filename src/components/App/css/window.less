@@ -6,15 +6,17 @@
 }
 
 .window {
-  position: fixed;
+  position: absolute;
   top: 0;
   left: 0;
-  overflow: auto;
   background-color: #fff;
   border-radius: 8px;
   border: 1px solid rgb(68, 68, 68);
   box-shadow: @containerBoxShadow;
   touch-action: none;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
 
   .header {
     min-width: 200px;
@@ -25,6 +27,7 @@
     background-color: #dfe1e5;
     box-shadow: 0 2px #0000001f;
     display: flex;
+    flex-shrink: 0;
 
     .title {
       min-width: 300px;

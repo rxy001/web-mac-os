@@ -24,6 +24,7 @@ const paths = {
   slice: resolveApp("src/redux"),
   constants: resolveApp("src/constants"),
   eventEmitter: resolveApp("src/eventEmitter"),
+  assets: resolveApp("src/assets"),
 }
 
 module.exports = {
@@ -42,6 +43,7 @@ module.exports = {
       "@slice": paths.slice,
       "@constants": paths.constants,
       "@eventEmitter": paths.eventEmitter,
+      "@assets": paths.assets,
     }),
     modifyHtmlWebpackPlugin(),
     addWebpackPlugin(

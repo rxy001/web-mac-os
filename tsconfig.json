@@ -25,7 +25,8 @@
       "@chooks": ["src/chooks"],
       "@slice/*": ["src/redux/*"],
       "@constants": ["src/constants"],
-      "@eventEmitter": ["src/eventEmitter"]
+      "@eventEmitter": ["src/eventEmitter"],
+      "@assets/*": ["src/assets/*"]
     }
   },
   "include": ["src"],

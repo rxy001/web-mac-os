@@ -1,13 +1,14 @@
 import classNames from "classnames"
-import { useState, useEffect, forwardRef } from "react"
+import { useState, useEffect, forwardRef, useMemo, isValidElement } from "react"
 import { useMemoizedFn, useDebounceFn } from "@chooks"
 import type { IconProps } from "./interface"
 import styles from "./css/icon.less"
 
+const reg = /\.(png|jpe?g|gif|svg)(\?.*)?$/
+
 const Icon = forwardRef<HTMLSpanElement, IconProps>(
   (
     {
-      image,
       icon,
       style,
       onClick,
@@ -49,6 +50,39 @@ const Icon = forwardRef<HTMLSpanElement, IconProps>(
       e.preventDefault()
     })
 
+    const component = useMemo(() => {
+      let type = ""
+
+      if (typeof icon === "string") {
+        type = reg.test(icon) ? "img" : "icon"
+      } else if (isValidElement(icon)) {
+        type = "ReactElement"
+      } else {
+        throw new Error(`不支持 ${type}`)
+      }
+
+      switch (type) {
+        case "img":
+          return (
+            <img
+              alt="img"
+              src={icon as string}
+              className={classNames(styles.icon, "icon")}
+            />
+          )
+        case "icon":
+          return (
+            <svg aria-hidden="true" className={classNames(styles.icon, "icon")}>
+              <use xlinkHref={`#${icon}`} />
+            </svg>
+          )
+        case "ReactElement":
+          return <div className={classNames(styles.icon, "icon")}>{icon}</div>
+        default:
+          return null
+      }
+    }, [icon])
+
     useEffect(() => {
       if (mask) {
         document.addEventListener("mouseup", onMouseUp)
@@ -69,23 +103,16 @@ const Icon = forwardRef<HTMLSpanElement, IconProps>(
         onContextMenu={onContextMenu}
         {...props}
       >
-        {image ? (
-          <img
-            src={icon}
-            alt="img"
-            className={classNames(styles.icon, "icon")}
-          />
-        ) : (
-          <svg aria-hidden="true" className={classNames(styles.icon, "icon")}>
-            <use xlinkHref={`#${icon}`} />
-          </svg>
-        )}
+        {component}
         {mask && (
           <div
             style={maskStyle}
-            className={classNames(maskClassName, {
-              [styles.mask]: maskVisible,
-            })}
+            className={classNames(
+              {
+                [styles.mask]: maskVisible,
+              },
+              maskClassName,
+            )}
           />
         )}
       </span>

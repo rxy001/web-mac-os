@@ -1,5 +1,6 @@
 import { App } from "@brc"
-import wechatImg from "../../assets/wechat.png"
+import { memo } from "react"
+import wechatImg from "@assets/wechat.png"
 
 const importWeChat = () => import("./WeChat")
 
@@ -8,7 +9,7 @@ const defaultSize = {
   height: 200,
 }
 
-export default function Application() {
+function Application() {
   return (
     <App
       defaultSize={defaultSize}
@@ -18,3 +19,5 @@ export default function Application() {
     />
   )
 }
+
+export default memo(Application)

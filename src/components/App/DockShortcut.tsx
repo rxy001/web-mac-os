@@ -1,10 +1,11 @@
+import classNames from "classnames"
 import { forwardRef, useMemo } from "react"
 import { Icon } from "../index"
-import styles from "./css/app.less"
+import styles from "./css/dockShortcut.less"
 import type { DockShortcutProps } from "./interface"
 
 const DockShortcut = forwardRef<HTMLDivElement, DockShortcutProps>(
-  ({ icon, iconWrapperWidth, iconSize, openApp, ...props }, ref) => {
+  ({ icon, iconType, iconWrapperWidth, iconSize, openApp, ...props }, ref) => {
     const iconStyle = useMemo(
       () => ({
         width: iconSize,
@@ -25,7 +26,14 @@ const DockShortcut = forwardRef<HTMLDivElement, DockShortcutProps>(
         {...props}
         ref={ref}
       >
-        <Icon image style={iconStyle} onClick={openApp} icon={icon} />
+        <Icon
+          maskClassName={classNames({
+            [styles.iconMask]: iconType === "circle",
+          })}
+          style={iconStyle}
+          onClick={openApp}
+          icon={icon}
+        />
       </div>
     )
   },

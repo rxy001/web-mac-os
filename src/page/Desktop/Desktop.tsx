@@ -4,6 +4,7 @@ import styles from "./css/desktop.less"
 import SplashScreen from "./SplashScreen"
 import Typora from "../../app/Typora"
 import WeChat from "../../app/WeChat"
+import Github from "../../app/Github"
 
 function Desktop() {
   return (
@@ -11,6 +12,7 @@ function Desktop() {
       <SplashScreen />
       <Topbar />
       <div className={styles.apps}>
+        <Github />
         <Typora />
         <WeChat />
       </div>
