@@ -1,10 +1,10 @@
-import { useLayoutEffect } from "react"
+import { useEffect } from "react"
 import useLatest from "./useLatest"
 
 export default function useUnmount(fn: () => void) {
   const latestFn = useLatest(fn)
 
-  useLayoutEffect(
+  useEffect(
     () => () => {
       latestFn.current()
     },

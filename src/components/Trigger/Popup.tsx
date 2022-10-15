@@ -1,7 +1,7 @@
 import {
   forwardRef,
   useImperativeHandle,
-  useLayoutEffect,
+  useEffect,
   useRef,
   useState,
 } from "react"
@@ -79,7 +79,7 @@ const Popup = forwardRef<HTMLDivElement, PopupProps>(
     })
 
     // 如果是初次显示 useResizeObserver 调用时机太慢，导致闪烁
-    useLayoutEffect(() => {
+    useEffect(() => {
       if (visible) {
         setPosition(calcPosition)
       }

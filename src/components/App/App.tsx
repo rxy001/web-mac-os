@@ -20,9 +20,8 @@ import { AppContext } from "./context"
 import type {
   AppProps,
   AppContextProps,
-  WindowHandlers,
-  WindowHandlerType,
   WindowRef,
+  WindowHandlerType,
 } from "./interface"
 import { EventType } from "./hooks"
 
@@ -56,6 +55,8 @@ function App({
 
   const [visible, setVisible] = useState(false)
 
+  const dockShortcutRef = useRef<HTMLDivElement>(null as any)
+
   const listeners = useRef(new Map())
 
   const id = useMemo(() => shortid.generate(), [])
@@ -77,16 +78,17 @@ function App({
     },
   )
 
-  const renderDockShortcut = useMemoizedFn((iconWrapperWidth, iconSize) => (
+  const getDockShortcut = useMemoizedFn(() => dockShortcutRef.current)
+
+  const renderDockShortcut = useMemoizedFn(() => (
     <DockShortcut
       id={id}
       key={id}
+      title={title}
       icon={icon}
       iconType={iconType}
       openApp={openApp}
-      iconSize={iconSize}
-      iconWrapperWidth={iconWrapperWidth}
-      ref={windowRef.current?.dockShortcutRef}
+      ref={dockShortcutRef}
     />
   ))
 
@@ -144,13 +146,13 @@ function App({
 
   const windowHandlers = useMemo(
     () =>
-      reduce<WindowHandlerType, WindowHandlers>(
+      reduce<WindowHandlerType, WindowRef>(
         handlerTypes,
         (obj, type) => {
           obj[type] = () => fireHandler(type)
           return obj
         },
-        {} as WindowHandlers,
+        {} as WindowRef,
       ),
     [fireHandler],
   )
@@ -214,6 +216,7 @@ function App({
           id={id}
           title={title}
           ref={windowRef}
+          getDockShortcut={getDockShortcut}
           minHeight={minHeight}
           minWidth={minWidth}
           maxHeight={maxHeight}

@@ -1,9 +1,7 @@
-import { useLayoutEffect } from "react"
+import { useEffect } from "react"
 
 export default function useMount(fn: () => void) {
-  // useLayouteffect 更符合 didMount
-  // useEffect 会在挂载之后延迟执行，两者都有弊有利
-  useLayoutEffect(() => {
+  useEffect(() => {
     fn?.()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])

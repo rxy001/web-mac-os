@@ -1,17 +1,24 @@
-import { memo, useEffect, useMemo, useState, useRef } from "react"
+import { memo, useMemo, useRef, useEffect } from "react"
 import { useAppSelector, useMemoizedFn } from "@chooks"
 import { map, size } from "lodash"
 import { useSpring, animated } from "@react-spring/web"
 import {
-  ICON_SIZE,
-  ICON_WRAPPER_WIDTH,
+  ICON_WRAPPER_SIZE,
   DOCK_HEIGHT,
   FULLSCREEN_DURATION,
+  ICON_WRAPPER_PADDING,
 } from "@constants"
 import { createPortal } from "react-dom"
 import { selectApps } from "@slice/appsSlice"
 import { App, Tooltip } from "../index"
 import styles from "./css/dock.less"
+
+const iconWrapperStyle = {
+  width: ICON_WRAPPER_SIZE,
+  height: ICON_WRAPPER_SIZE - ICON_WRAPPER_PADDING * 2,
+  padding: `0 ${ICON_WRAPPER_PADDING}px`,
+  flex: "none",
+}
 
 function Dock() {
   const runningApps = useAppSelector(selectApps)
@@ -21,15 +28,18 @@ function Dock() {
   const [springStyle, api] = useSpring(() => ({
     width: 0,
     y: 0,
+    paddingLeft: 0,
+    paddingRight: 0,
     x: "-50%",
     opacity: 1,
   }))
 
-  const [padding, setPadding] = useState("0")
-
   const mergedStyle = useMemo(
-    () => ({ ...springStyle, padding, height: DOCK_HEIGHT }),
-    [springStyle, padding],
+    () => ({
+      ...springStyle,
+      height: DOCK_HEIGHT,
+    }),
+    [springStyle],
   )
 
   const fullscreenApps = useRef(new Set<string>())
@@ -98,18 +108,24 @@ function Dock() {
     const length = size(runningApps)
 
     if (prevAppCount.current !== length) {
-      if (length > 0) {
-        setPadding(`0 ${(ICON_WRAPPER_WIDTH - ICON_SIZE) / 2}px`)
-      } else if (!length) {
-        setPadding("0")
+      const config = {
+        duration: 200,
       }
-
-      api.start({
-        width: ICON_WRAPPER_WIDTH * length,
-        config: {
-          duration: 100,
-        },
-      })
+      if (length > 0) {
+        api.start({
+          width: ICON_WRAPPER_SIZE * length,
+          paddingLeft: ICON_WRAPPER_PADDING,
+          paddingRight: ICON_WRAPPER_PADDING,
+          config,
+        })
+      } else if (!length) {
+        api.start({
+          width: 0,
+          paddingLeft: 0,
+          paddingRight: 0,
+          config,
+        })
+      }
 
       prevAppCount.current = length
     }
@@ -118,10 +134,10 @@ function Dock() {
   return createPortal(
     <animated.div key="dock" style={mergedStyle} className={styles.dockWrapper}>
       <Tooltip.Group>
-        {map(runningApps, ({ title, id, renderDockShortcut }) => (
-          <Tooltip text={title} key={id}>
-            {renderDockShortcut(ICON_WRAPPER_WIDTH, ICON_SIZE)}
-          </Tooltip>
+        {map(runningApps, ({ id, renderDockShortcut }) => (
+          <div key={id} style={iconWrapperStyle}>
+            {renderDockShortcut()}
+          </div>
         ))}
       </Tooltip.Group>
     </animated.div>,

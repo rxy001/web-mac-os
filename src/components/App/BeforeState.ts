@@ -5,6 +5,7 @@ export interface PreState {
   height: number
   duration: number
   opacity: number
+  scale: number
 }
 
 export default class BeforeState {
@@ -15,6 +16,7 @@ export default class BeforeState {
     height: 0,
     duration: 200,
     opacity: 1,
+    scale: 1,
   }
 
   set(state: PreState) {

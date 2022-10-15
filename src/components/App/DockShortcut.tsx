@@ -1,42 +1,24 @@
 import classNames from "classnames"
-import { forwardRef, useMemo } from "react"
-import { Icon } from "../index"
+import { forwardRef } from "react"
+import { Icon, Tooltip } from "../index"
 import styles from "./css/dockShortcut.less"
 import type { DockShortcutProps } from "./interface"
 
 const DockShortcut = forwardRef<HTMLDivElement, DockShortcutProps>(
-  ({ icon, iconType, iconWrapperWidth, iconSize, openApp, ...props }, ref) => {
-    const iconStyle = useMemo(
-      () => ({
-        width: iconSize,
-        height: iconSize,
-      }),
-      [iconSize],
-    )
-
-    const iconWrapperStyle = useMemo(
-      () => ({ width: iconWrapperWidth }),
-      [iconWrapperWidth],
-    )
-
-    return (
-      <div
-        className={styles.iconWrapper}
-        style={iconWrapperStyle}
-        {...props}
-        ref={ref}
-      >
+  ({ icon, iconType, title, id, openApp, ...props }, ref) => (
+    <div className={styles.iconWrapper} {...props} ref={ref}>
+      <Tooltip text={title} key={id}>
         <Icon
           maskClassName={classNames({
             [styles.iconMask]: iconType === "circle",
           })}
-          style={iconStyle}
+          className={styles.icon}
           onClick={openApp}
           icon={icon}
         />
-      </div>
-    )
-  },
+      </Tooltip>
+    </div>
+  ),
 )
 
 export default DockShortcut

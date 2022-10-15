@@ -24,6 +24,7 @@ export interface Size {
 }
 
 type DefaultStyle = {
+  scale?: number
   opacity?: number
 }
 

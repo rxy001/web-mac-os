@@ -3,9 +3,8 @@ import {
   useRef,
   useState,
   Children,
-  useEffect,
   useContext,
-  useLayoutEffect,
+  useEffect,
   forwardRef,
   useImperativeHandle,
 } from "react"
@@ -231,7 +230,7 @@ const Trigger = forwardRef<HTMLElement, TriggerProps>(
       onVisibleChange?.(false)
     })
 
-    useLayoutEffect(() => {
+    useEffect(() => {
       // 解决在 trigger.group 中，点击 click trigger 后，popup未隐藏，直接移动到 hover trigger，
       // 导致动画结束， 但是 popupvisible 未改变
       if (

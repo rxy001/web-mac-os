@@ -1,5 +1,5 @@
 import type { SetStateAction } from "react"
-import { useCallback, useState, useRef, useLayoutEffect } from "react"
+import { useCallback, useState, useRef, useEffect } from "react"
 
 type Callback = () => void
 
@@ -17,7 +17,7 @@ export default function useSetState<S>(
     callback.current = cb
   }, [])
 
-  useLayoutEffect(() => {
+  useEffect(() => {
     callback.current?.()
   }, [state])
 

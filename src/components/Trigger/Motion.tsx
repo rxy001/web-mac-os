@@ -3,7 +3,7 @@ import {
   useRef,
   useImperativeHandle,
   useMemo,
-  useLayoutEffect,
+  useEffect,
   useContext,
 } from "react"
 import { useUnmount, useDebounceFn, useMemoizedFn } from "@chooks"
@@ -61,7 +61,7 @@ const Motion = forwardRef<HTMLDivElement, MotionProps>(
       }
     })
 
-    useLayoutEffect(() => {
+    useEffect(() => {
       if (groupContext && visible) {
         // 当上个隐藏动画还未完成时，快速隐藏
         if (groupContext.currentMotion !== Motion) {
@@ -71,7 +71,7 @@ const Motion = forwardRef<HTMLDivElement, MotionProps>(
       }
     }, [visible, Motion, groupContext])
 
-    useLayoutEffect(() => {
+    useEffect(() => {
       if (visible) {
         delaySetDisplay.cancel()
         nodeRef.current.style.display = "block"

@@ -1,4 +1,4 @@
-import type { ComponentType, MutableRefObject, ReactElement } from "react"
+import type { ComponentType, ReactElement } from "react"
 import type { RndBind, Position, Size } from "@chooks"
 import type { Listener } from "@eventEmitter"
 import type { IconProps } from "../index"
@@ -16,7 +16,7 @@ interface CommonType {
   title: string
 }
 
-export interface AppContextProps extends WindowHandlers {
+export interface AppContextProps extends WindowRef {
   closeApp: () => void
   openApp: () => void
   subscribe: (event: EventType, listener: Listener) => void
@@ -29,16 +29,15 @@ export interface AppProps extends CommonType {
 }
 
 export interface DesktopShortcutProps {
-  icon: IconProps["icon"]
   title: string
   openApp: () => void
+  icon: IconProps["icon"]
   iconType: AppProps["iconType"]
 }
 
 export interface DockShortcutProps {
-  iconWrapperWidth?: number
-  iconSize?: number
   id: string
+  title: string
   openApp: () => void
   icon: IconProps["icon"]
   iconType: AppProps["iconType"]
@@ -52,6 +51,7 @@ export interface WindowProps extends CommonType {
   onExitFullscreen?: () => void
   onMinimize?: () => void
   onExpand?: () => void
+  getDockShortcut?: () => HTMLDivElement
 }
 
 export type WindowHandlerType =
@@ -65,7 +65,7 @@ export type WindowHandlerType =
   | "isFullscreen"
   | "isMaximized"
 
-export interface WindowHandlers {
+export interface WindowRef {
   fullscreen: () => void
   exitFullscreen: () => void
   minimize: () => void
@@ -77,9 +77,6 @@ export interface WindowHandlers {
   isMaximized: () => boolean
 }
 
-export interface WindowRef extends WindowHandlers {
-  dockShortcutRef: MutableRefObject<HTMLDivElement>
-}
 export interface WindowHeaderProps {
   title: string
   dragBind: RndBind

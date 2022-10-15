@@ -1,4 +1,4 @@
-import { useCallback, useLayoutEffect, useRef } from "react"
+import { useCallback, useEffect, useRef } from "react"
 import type { MutableRefObject } from "react"
 import { isFunction, keys, size } from "lodash"
 import { useMount, useLatest, useDebounceFn } from "./index"
@@ -25,7 +25,7 @@ export default function useResizeObserver(
     resizeObserver.current = new ResizeObserver(listener)
   })
 
-  useLayoutEffect(() => {
+  useEffect(() => {
     let prevNode: any = null
     if (nodeRef) {
       let node = null

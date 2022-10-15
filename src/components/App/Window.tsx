@@ -31,6 +31,7 @@ const transformRndStyle = (rndStyle: RndStyle) => ({
   width: rndStyle.width.get(),
   height: rndStyle.height.get(),
   opacity: rndStyle.opacity?.get() ?? 1,
+  scale: rndStyle.scale?.get() ?? 1,
 })
 
 function Window(
@@ -48,6 +49,7 @@ function Window(
     onMinimize,
     onExpand,
     onExitFullscreen,
+    getDockShortcut,
   }: WindowProps,
   ref?: ForwardedRef<WindowRef>,
 ) {
@@ -68,6 +70,7 @@ function Window(
       y: document.body.clientHeight / 2 - defaultSize.height / 2,
     },
     defaultStyle: {
+      scale: 1,
       opacity: 1,
     },
     enableResizing: !isFullscreen,
@@ -97,11 +100,9 @@ function Window(
   })
 
   const mergedStyle = useMemo(
-    () => ({ ...rndStyle, ...style }),
+    () => ({ ...rndStyle, ...style, transformOrigin: "top left" }),
     [rndStyle, style],
   )
-
-  const dockShortcutRef = useRef<HTMLDivElement>(null as any)
 
   const fullscreenBeforeState = useRef(new BeforeState())
 
@@ -133,13 +134,14 @@ function Window(
   })
 
   const restore = useMemoizedFn((state: PreState, onStart?: () => void) => {
-    const { x, y, width, height, duration, opacity } = state
+    const { x, y, width, height, duration, opacity, scale } = state
 
     rndApi.start({
       x,
       y,
       width,
       height,
+      scale,
       opacity,
       config: {
         duration,
@@ -162,7 +164,8 @@ function Window(
         height: clientHeight,
         x: 0,
         y: 0,
-        opacity: 1,
+        // scale: 1,
+        // opacity: 1,
         config: {
           duration: FULLSCREEN_DURATION,
         },
@@ -197,7 +200,8 @@ function Window(
       rndApi.start({
         x: 0,
         y: TOP_BAR_HEIGHT,
-        opacity: 1,
+        // opacity: 1,
+        // scale: 1,
         config: {
           duration: FULLSCREEN_DURATION,
         },
@@ -218,8 +222,8 @@ function Window(
     let x = 0
     let y = 0
 
-    if (dockShortcutRef.current) {
-      ;({ x, y } = dockShortcutRef.current.getBoundingClientRect())
+    if (getDockShortcut) {
+      ;({ x, y } = getDockShortcut().getBoundingClientRect())
     } else {
       const { width, height } = getMaximizedSize()
       x = width / 2
@@ -232,11 +236,10 @@ function Window(
         duration: MINIMIZE_DURATION,
       })
       rndApi.start({
-        width: 100,
-        height: 100,
-        opacity: 0,
         x,
         y,
+        scale: 0.1,
+        opacity: 0,
         config: {
           duration: MINIMIZE_DURATION,
         },
@@ -269,7 +272,6 @@ function Window(
       exitFullscreen,
       maximize,
       exitMaximize,
-      dockShortcutRef,
       isActivated: getIsActivated,
       isFullscreen: getIsFullscreen,
       isMaximized: getIsMaximized,
