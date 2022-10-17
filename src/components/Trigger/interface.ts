@@ -1,23 +1,27 @@
 import type {
   ReactElement,
-  DOMAttributes,
   ReactNode,
   CSSProperties,
+  MouseEvent,
+  TouchEvent,
 } from "react"
 
-type ActionType = "click" | "hover" | "contextMenu"
+type ActionType = "click" | "hover" | "contextMenu" | "longPress"
 
-export type DOMEvents = Omit<
-  DOMAttributes<HTMLElement>,
-  "children" | "dangerouslySetInnerHTML"
->
+export interface DOMEvents {
+  onClick?: (e: MouseEvent) => void
+  onMouseDown?: (e: MouseEvent) => void
+  onMouseEnter?: (e: MouseEvent) => void
+  onMouseLeave?: (e: MouseEvent) => void
+  onMouseUp?: (e: MouseEvent) => void
+  onContextMenu?: (e: MouseEvent) => void
+  onMouseMove?: (e: MouseEvent) => void
+}
 
 export interface TriggerProps extends DOMEvents {
   children: ReactElement
-  popup?: ReactElement
-  actions: ActionType | ActionType[]
-  showActions?: ActionType[]
-  hideActions?: ActionType[]
+  popup?: ReactNode | (() => ReactNode)
+  action: ActionType
   defaultPopupVisible?: boolean
   getTriggerDOMNode?: () => HTMLElement
   popupPlacement?: "top" | "bottom"
@@ -53,3 +57,12 @@ export interface GroupContextType {
   setCurrentPopup: (e: CurrentPopup) => void
   setCurrentMotion: (e: CurrentMotion) => void
 }
+
+export type Position = {
+  x: number
+  y: number
+} | null
+
+export type LongPressEvent<Target = Element> =
+  | MouseEvent<Target>
+  | TouchEvent<Target>

@@ -12,6 +12,7 @@ import { useSpring } from "@react-spring/web"
 import type { ReactDOMAttributes } from "@use-gesture/react/dist/declarations/src/types"
 import styles from "./css/resize.less"
 import useUnmount from "./useUnmount"
+import useMemoizedFn from "./useMemoizedFn"
 
 export interface Position {
   x: number
@@ -324,7 +325,10 @@ const useRnd = ({
     resizeBorderRef.current = null
   })
 
-  return [style, dragBind, resizeBind, api]
+  const memoizedDragBind = useMemoizedFn(dragBind)
+  const memoizedResizeBind = useMemoizedFn(resizeBind)
+
+  return [style, memoizedDragBind, memoizedResizeBind, api]
 }
 
 export default useRnd

@@ -3,6 +3,7 @@ import type { ReactElement, ReactFragment } from "react"
 import { GroupContext } from "./context"
 import type { CurrentPopup, CurrentMotion, GroupContextType } from "./interface"
 
+// group 内 trigger 只会同时显示一个 popup
 export default function Group({
   children,
 }: {

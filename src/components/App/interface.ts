@@ -17,8 +17,6 @@ interface CommonType {
 }
 
 export interface AppContextProps extends WindowRef {
-  closeApp: () => void
-  openApp: () => void
   subscribe: (event: EventType, listener: Listener) => void
   unSubscribe: (event: EventType, listener: Listener) => void
 }
@@ -26,21 +24,6 @@ export interface AppProps extends CommonType {
   icon: IconProps["icon"]
   iconType?: "round" | "circle"
   element: () => Promise<{ default: ComponentType }>
-}
-
-export interface DesktopShortcutProps {
-  title: string
-  openApp: () => void
-  icon: IconProps["icon"]
-  iconType: AppProps["iconType"]
-}
-
-export interface DockShortcutProps {
-  id: string
-  title: string
-  openApp: () => void
-  icon: IconProps["icon"]
-  iconType: AppProps["iconType"]
 }
 
 export interface WindowProps extends CommonType {
@@ -52,18 +35,23 @@ export interface WindowProps extends CommonType {
   onMinimize?: () => void
   onExpand?: () => void
   getDockShortcut?: () => HTMLDivElement
+  onShow?: () => void
+  onHide?: () => void
 }
 
-export type WindowHandlerType =
+export type WindowEventType =
   | "fullscreen"
   | "exitFullscreen"
   | "minimize"
   | "expand"
   | "maximize"
-  | "exitMaximize"
-  | "isActivated"
+  | "exitMaximized"
+  | "isMinimized"
   | "isFullscreen"
   | "isMaximized"
+  | "showWindow"
+  | "hideWindow"
+  | "isShow"
 
 export interface WindowRef {
   fullscreen: () => void
@@ -71,14 +59,38 @@ export interface WindowRef {
   minimize: () => void
   expand: () => void
   maximize: () => void
-  exitMaximize: () => void
-  isActivated: () => boolean
+  exitMaximized: () => void
+  isMinimized: () => boolean
   isFullscreen: () => boolean
   isMaximized: () => boolean
+  showWindow: () => void
+  hideWindow: () => void
+  isShow: () => boolean
 }
 
 export interface WindowHeaderProps {
   title: string
   dragBind: RndBind
   className?: string
+  isFullscreen: boolean
+  isMaximized: boolean
+  minimize: () => void
+  exitMaximized: () => void
+  exitFullscreen: () => void
+  hideWindow: () => void
+  maximize: () => void
+  fullscreen: () => void
+}
+
+export interface DesktopShortcutProps {
+  title: string
+  openApp: () => void
+  icon: IconProps["icon"]
+  iconType: AppProps["iconType"]
+}
+
+export interface DockShortcutProps extends DesktopShortcutProps {
+  windowHandlers: WindowRef
+  getOpen: () => boolean
+  closeApp: () => void
 }

@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef } from "react"
 import type { MutableRefObject } from "react"
 import { isFunction, keys, size } from "lodash"
-import { useMount, useLatest, useDebounceFn } from "./index"
+import { useMount, useLatest, useDebounceFn, useUnmount } from "./index"
 
 export default function useResizeObserver(
   nodeRef:
@@ -46,6 +46,10 @@ export default function useResizeObserver(
       }
     }
   }, [nodeRef])
+
+  useUnmount(() => {
+    resizeObserver.current = null as any
+  })
 
   return useCallback(() => {
     resizeObserver.current.disconnect()

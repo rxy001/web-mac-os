@@ -50,12 +50,16 @@ function Window(
     onExpand,
     onExitFullscreen,
     getDockShortcut,
+    onShow,
+    onHide,
   }: WindowProps,
   ref?: ForwardedRef<WindowRef>,
 ) {
+  const [windowVisible, setWindowVisible] = useSetState(true)
+
   const [isFullscreen, setIsFullscreen] = useSetState(false)
 
-  const [isActivated, setIsActivated] = useSetState(true)
+  const [isMinimized, setIsActivated] = useSetState(true)
 
   const [isMaximized, setIsMaximized] = useState(false)
 
@@ -211,7 +215,7 @@ function Window(
     }
   })
 
-  const exitMaximize = useMemoizedFn(() => {
+  const exitMaximized = useMemoizedFn(() => {
     if (isMaximized) {
       restore(maximizeBeforeState.current.get())
       setIsMaximized(false)
@@ -230,7 +234,7 @@ function Window(
       y = height
     }
 
-    if (isActivated) {
+    if (isMinimized) {
       minimizeBeforeState.current.set({
         ...transformRndStyle(rndStyle),
         duration: MINIMIZE_DURATION,
@@ -238,13 +242,13 @@ function Window(
       rndApi.start({
         x,
         y,
-        scale: 0.1,
+        scale: 0.2,
         opacity: 0,
         config: {
           duration: MINIMIZE_DURATION,
         },
         onRest: () => {
-          setDisplay("none")
+          // setDisplay("none")
         },
       })
       setIsActivated(false, onMinimize)
@@ -252,16 +256,34 @@ function Window(
   })
 
   const expand = useMemoizedFn(() => {
-    if (!isActivated) {
-      restore(minimizeBeforeState.current.get(), () => setDisplay("block"))
+    if (!isMinimized) {
+      // restore(minimizeBeforeState.current.get(), () => setDisplay("block"))
+      restore(minimizeBeforeState.current.get())
       setIsActivated(true, onExpand)
       setZIndex()
     }
   })
 
-  const getIsActivated = useMemoizedFn(() => isActivated)
+  const showWindow = useMemoizedFn(() => {
+    if (!windowVisible) {
+      setWindowVisible(true)
+      setDisplay("block")
+      onShow?.()
+    }
+  })
+
+  const hideWindow = useMemoizedFn(() => {
+    if (windowVisible) {
+      setWindowVisible(false)
+      setDisplay("none")
+      onHide?.()
+    }
+  })
+
+  const getIsMinimized = useMemoizedFn(() => isMinimized)
   const getIsFullscreen = useMemoizedFn(() => isFullscreen)
   const getIsMaximized = useMemoizedFn(() => isMaximized)
+  const getVisible = useMemoizedFn(() => windowVisible)
 
   useImperativeHandle(
     ref,
@@ -271,8 +293,11 @@ function Window(
       fullscreen,
       exitFullscreen,
       maximize,
-      exitMaximize,
-      isActivated: getIsActivated,
+      exitMaximized,
+      showWindow,
+      hideWindow,
+      isShow: getVisible,
+      isMinimized: getIsMinimized,
       isFullscreen: getIsFullscreen,
       isMaximized: getIsMaximized,
     }),
@@ -318,7 +343,20 @@ function Window(
         })}
         {...resizeBind()}
       >
-        <WindowHeader title={title} dragBind={dragBind} />
+        {isMinimized && (
+          <WindowHeader
+            title={title}
+            dragBind={dragBind}
+            isFullscreen={isFullscreen}
+            isMaximized={isMaximized}
+            minimize={minimize}
+            exitMaximized={exitMaximized}
+            exitFullscreen={exitFullscreen}
+            hideWindow={hideWindow}
+            maximize={maximize}
+            fullscreen={fullscreen}
+          />
+        )}
         {children}
       </animated.div>
     </div>,

@@ -1,32 +1,13 @@
-import { memo, useMemo } from "react"
-import { Trigger } from "../index"
+import { forwardRef } from "react"
+import { Tooltip } from "../index"
 import type { PopoverProps } from "./interface"
-import styles from "./css/popover.less"
 
-function Popover({
-  children,
-  visible,
-  trigger,
-  placement,
-  content,
-  onVisibleChange,
-}: PopoverProps) {
-  const popup = useMemo(
-    () => <div className={styles.popup}>{content}</div>,
-    [content],
-  )
-
-  return (
-    <Trigger
-      visible={visible}
-      onVisibleChange={onVisibleChange}
-      popup={popup}
-      popupPlacement={placement}
-      actions={trigger}
-    >
+const Popover = forwardRef<HTMLDivElement, PopoverProps>(
+  ({ content, children, ...props }, ref) => (
+    <Tooltip ref={ref} text={content} {...props}>
       {children}
-    </Trigger>
-  )
-}
+    </Tooltip>
+  ),
+)
 
-export default memo(Popover)
+export default Popover

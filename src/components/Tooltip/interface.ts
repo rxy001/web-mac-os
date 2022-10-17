@@ -1,10 +1,14 @@
-import type { ReactElement, ReactNode } from "react"
 import type { TriggerProps } from "../index"
 
-export interface TooltipProps {
-  children: ReactElement
-  text: ReactNode
+export interface TooltipProps
+  extends Omit<
+    TriggerProps,
+    "popupPlacement" | "action" | "popup" | "defaultPopupVisible"
+  > {
+  text: TriggerProps["popup"]
   placement?: TriggerProps["popupPlacement"]
+  trigger?: TriggerProps["action"]
+  defaultVisible?: TriggerProps["defaultPopupVisible"]
   distance?: number
-  trigger?: TriggerProps["actions"]
+  arrow?: boolean
 }

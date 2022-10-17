@@ -1,37 +1,49 @@
-import { memo, useMemo } from "react"
+import { forwardRef, useMemo } from "react"
 import classNames from "classnames"
-
+import { isFunction } from "lodash"
+import { useMemoizedFn } from "@chooks"
 import type { TooltipProps } from "./interface"
 import styles from "./css/tooltip.less"
 import Trigger from "../Trigger"
 
-function Tooltip({
-  children,
-  text,
-  placement,
-  trigger = "hover",
-  distance = 20,
-}: TooltipProps) {
-  const style = useMemo(() => {
-    switch (placement) {
-      case "bottom":
-        return {
-          paddingTop: distance,
-        }
-      default:
-        return {
-          paddingBottom: distance,
-        }
-    }
-  }, [distance, placement])
+const Tooltip = forwardRef<HTMLDivElement, TooltipProps>(
+  (
+    {
+      text,
+      children,
+      visible,
+      onVisibleChange,
+      defaultVisible,
+      placement = "top",
+      arrow = true,
+      trigger = "hover",
+      distance = 0,
+      ...props
+    },
+    ref,
+  ) => {
+    const style = useMemo(() => {
+      switch (placement) {
+        case "bottom":
+          return {
+            paddingTop: distance,
+          }
+        default:
+          return {
+            paddingBottom: distance,
+          }
+      }
+    }, [distance, placement])
 
-  return (
-    <Trigger
-      actions={trigger}
-      popupPlacement={placement}
-      popup={
-        <div style={style}>
-          <div className={styles.tooltip}>
+    const renderPopup = useMemoizedFn(() => (
+      <div style={style} key="popup">
+        <div
+          className={classNames(styles.tooltip, {
+            [styles.tooltipTop]: arrow && placement === "top",
+            [styles.tooltipBottom]: arrow && placement !== "top",
+          })}
+        >
+          {arrow && (
             <div
               className={classNames(styles.arrow, {
                 [styles.arrowTop]: placement === "bottom",
@@ -45,14 +57,29 @@ function Tooltip({
                 })}
               />
             </div>
-            <div className={styles.content}>{text}</div>
+          )}
+          <div className={styles.content}>
+            {isFunction(text) ? text() : text}
           </div>
         </div>
-      }
-    >
-      {children}
-    </Trigger>
-  )
-}
+      </div>
+    ))
 
-export default memo(Tooltip)
+    return (
+      <Trigger
+        ref={ref}
+        action={trigger}
+        visible={visible}
+        popupPlacement={placement}
+        defaultPopupVisible={defaultVisible}
+        onVisibleChange={onVisibleChange}
+        popup={renderPopup}
+        {...props}
+      >
+        {children}
+      </Trigger>
+    )
+  },
+)
+
+export default Tooltip

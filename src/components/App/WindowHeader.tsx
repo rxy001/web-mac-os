@@ -1,14 +1,23 @@
 import classNames from "classnames"
-import { useState } from "react"
+import { memo, useState } from "react"
 import { useMemoizedFn } from "@chooks"
 import styles from "./css/window.less"
 import { Icon } from "../index"
 import type { WindowHeaderProps } from "./interface"
-import { useApp } from "./hooks"
 
-function WindowHeader({ title, className, dragBind }: WindowHeaderProps) {
-  const app = useApp()
-
+function WindowHeader({
+  title,
+  className,
+  dragBind,
+  isFullscreen,
+  isMaximized,
+  minimize,
+  exitMaximized,
+  exitFullscreen,
+  hideWindow,
+  maximize: propsMaximize,
+  fullscreen: propsFullscreen,
+}: WindowHeaderProps) {
   const [isHover, setIsHover] = useState(false)
 
   const onMouseOver = useMemoizedFn(() => setIsHover(true))
@@ -16,18 +25,18 @@ function WindowHeader({ title, className, dragBind }: WindowHeaderProps) {
   const onMouseOut = useMemoizedFn(() => setIsHover(false))
 
   const fullscreen = useMemoizedFn(() => {
-    if (app.isFullscreen()) {
-      app.exitFullscreen()
+    if (isFullscreen) {
+      exitFullscreen()
     } else {
-      app.fullscreen()
+      propsFullscreen()
     }
   })
 
   const maximize = useMemoizedFn(() => {
-    if (app.isMaximized()) {
-      app.exitMaximize()
+    if (isMaximized) {
+      exitMaximized()
     } else {
-      app.maximize()
+      propsMaximize()
     }
   })
 
@@ -37,7 +46,7 @@ function WindowHeader({ title, className, dragBind }: WindowHeaderProps) {
       onMouseOver={onMouseOver}
       onMouseOut={onMouseOut}
     >
-      <div className={styles.closeIcon} onClick={app.closeApp}>
+      <div className={styles.closeIcon} onClick={hideWindow}>
         {isHover && (
           <Icon
             icon="iconclose1"
@@ -46,7 +55,7 @@ function WindowHeader({ title, className, dragBind }: WindowHeaderProps) {
           />
         )}
       </div>
-      <div className={styles.minimizeIcon} onClick={app.minimize}>
+      <div className={styles.minimizeIcon} onClick={minimize}>
         {isHover && (
           <Icon
             icon="iconsubtract"
@@ -58,7 +67,7 @@ function WindowHeader({ title, className, dragBind }: WindowHeaderProps) {
       <div className={styles.fullscreenIcon} onClick={fullscreen}>
         {isHover && (
           <Icon
-            icon={app.isFullscreen() ? "iconnarrow" : "iconfullscreen"}
+            icon={isFullscreen ? "iconnarrow" : "iconfullscreen"}
             className={styles.icon}
             maskClassName={styles.maskClassName}
           />
@@ -67,7 +76,7 @@ function WindowHeader({ title, className, dragBind }: WindowHeaderProps) {
     </div>
   ))
 
-  return app.isFullscreen() ? (
+  return isFullscreen ? (
     renderButtonGroup()
   ) : (
     <div className={classNames(styles.header)}>
@@ -84,4 +93,4 @@ function WindowHeader({ title, className, dragBind }: WindowHeaderProps) {
 }
 
 // memo 没用，dragBind 引用在变
-export default WindowHeader
+export default memo(WindowHeader)

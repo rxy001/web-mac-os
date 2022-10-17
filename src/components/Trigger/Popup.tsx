@@ -1,11 +1,11 @@
 import {
   forwardRef,
   useImperativeHandle,
-  useEffect,
+  useLayoutEffect,
   useRef,
   useState,
 } from "react"
-import { useMemoizedFn, useMount, useResizeObserver, useUnmount } from "@chooks"
+import { useMemoizedFn, useResizeObserver, useUnmount } from "@chooks"
 import { ceil, isEqual, max } from "lodash"
 import { isDOMVisible } from "@utils"
 import styles from "./css/trigger.less"
@@ -74,12 +74,12 @@ const Popup = forwardRef<HTMLDivElement, PopupProps>(
 
     useImperativeHandle(ref, () => motionRef.current, [])
 
-    useMount(() => {
+    useLayoutEffect(() => {
       triggerRef.current = getTriggerDOMNode()
     })
 
     // 如果是初次显示 useResizeObserver 调用时机太慢，导致闪烁
-    useEffect(() => {
+    useLayoutEffect(() => {
       if (visible) {
         setPosition(calcPosition)
       }

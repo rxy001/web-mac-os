@@ -1,12 +1,5 @@
-import type { ReactNode } from "react"
-import type { TriggerProps } from "../Trigger"
+import type { TooltipProps } from "../index"
 
-export interface PopoverProps
-  extends Pick<
-    TriggerProps,
-    "visible" | "onVisibleChange" | "defaultPopupVisible" | "children"
-  > {
-  content: ReactNode
-  trigger: TriggerProps["actions"]
-  placement?: TriggerProps["popupPlacement"]
+export interface PopoverProps extends Omit<TooltipProps, "text"> {
+  content: TooltipProps["text"]
 }

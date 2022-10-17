@@ -15,9 +15,10 @@ import styles from "./css/dock.less"
 
 const iconWrapperStyle = {
   width: ICON_WRAPPER_SIZE,
-  height: ICON_WRAPPER_SIZE - ICON_WRAPPER_PADDING * 2,
-  padding: `0 ${ICON_WRAPPER_PADDING}px`,
+  height: DOCK_HEIGHT - ICON_WRAPPER_PADDING * 2,
+  padding: ICON_WRAPPER_PADDING,
   flex: "none",
+  marginBottom: 5,
 }
 
 function Dock() {
