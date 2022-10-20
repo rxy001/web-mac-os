@@ -22,9 +22,9 @@ const iconWrapperStyle = {
 }
 
 function Dock() {
-  const runningApps = useAppSelector(selectApps)
-
   const visible = useRef(true)
+
+  const runningApps = useAppSelector(selectApps)
 
   const [springStyle, api] = useSpring(() => ({
     width: 0,
@@ -73,33 +73,33 @@ function Dock() {
     }
   })
 
-  App.useAppSubscribe(App.EventType.Fullscreen, (appName) => {
+  App.useAppSubscribe(App.EventType.WINDOW_FULLSCREEN, (appName) => {
     if (!fullscreenApps.current.size) {
       hideDock()
     }
     fullscreenApps.current.add(appName)
   })
 
-  App.useAppSubscribe(App.EventType.ExitFullScreen, (appName) => {
+  App.useAppSubscribe(App.EventType.WINDOW_EXIT_FULLSCREEN, (appName) => {
     fullscreenApps.current.delete(appName)
     if (!fullscreenApps.current.size) {
       showDock()
     }
   })
 
-  App.useAppSubscribe(App.EventType.Minimize, (appName) => {
+  App.useAppSubscribe(App.EventType.WINDOW_MINIMIZE, (appName) => {
     if (fullscreenApps.current.has(appName)) {
       showDock()
     }
   })
 
-  App.useAppSubscribe(App.EventType.Expand, (appName) => {
+  App.useAppSubscribe(App.EventType.WINDOW_EXPAND, (appName) => {
     if (fullscreenApps.current.has(appName)) {
       hideDock()
     }
   })
 
-  App.useAppSubscribe(App.EventType.Close, (appName) => {
+  App.useAppSubscribe(App.EventType.APP_CLOSE, (appName) => {
     if (fullscreenApps.current.delete(appName)) {
       showDock()
     }
@@ -135,8 +135,8 @@ function Dock() {
   return createPortal(
     <animated.div key="dock" style={mergedStyle} className={styles.dockWrapper}>
       <Tooltip.Group>
-        {map(runningApps, ({ id, renderDockShortcut }) => (
-          <div key={id} style={iconWrapperStyle}>
+        {map(runningApps, ({ title, renderDockShortcut }) => (
+          <div key={title} style={iconWrapperStyle}>
             {renderDockShortcut()}
           </div>
         ))}

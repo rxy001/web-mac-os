@@ -10,12 +10,16 @@ export const useApp: UseApp = () => {
 }
 
 export enum EventType {
-  Fullscreen = "__APP_FULLSCREEN__",
-  ExitFullScreen = "__APP_EXIT_FULLSCREEN__",
-  Minimize = "__APP_MINIMIZE__",
-  Expand = "__APP_EXPAND__",
-  Opened = "__APP_OPENED__",
-  Close = "__APP_CLOSE__",
+  APP_OPENED = "__APP_OPENED__",
+  APP_CLOSE = "__APP_CLOSE__",
+  APP_KEEP_IN_DOCK = "__APP_KEEP_IN_DOCK__",
+  APP_REMOVE_IN_DOCK = "__APP_REMOVE_IN_DOCK__",
+  WINDOW_SHOWED = "__WINDOW_OPENED__",
+  WINDOW_HIDDEN = "__WINDOW_CLOSED__",
+  WINDOW_FULLSCREEN = "__WINDOW_FULLSCREEN__",
+  WINDOW_EXIT_FULLSCREEN = "__WINDOW_EXIT_FULLSCREEN__",
+  WINDOW_MINIMIZE = "__WINDOW_MINIMIZE__",
+  WINDOW_EXPAND = "__WINDOW_EXPAND__",
 }
 
 export function useAppSubscribe(event: EventType, listener: Listener) {

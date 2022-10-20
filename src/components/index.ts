@@ -13,7 +13,6 @@ export type { AppProps } from "./App"
 export { KeepAlive, AliveScope } from "./KeepAlive"
 
 export { default as Dock } from "./Dock"
-export type { DockProps } from "./Dock"
 
 export { default as Tooltip } from "./Tooltip"
 export type { TooltipProps } from "./Tooltip"

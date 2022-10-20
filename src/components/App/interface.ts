@@ -27,7 +27,6 @@ export interface AppProps extends CommonType {
 }
 
 export interface WindowProps extends CommonType {
-  id: string
   children: ReactElement
   style?: any
   onFullscreen?: () => void
@@ -35,8 +34,8 @@ export interface WindowProps extends CommonType {
   onMinimize?: () => void
   onExpand?: () => void
   getDockShortcut?: () => HTMLDivElement
-  onShow?: () => void
-  onHide?: () => void
+  onShowed?: () => void
+  onHidden?: () => void
 }
 
 export type WindowEventType =
@@ -86,11 +85,5 @@ export interface DesktopShortcutProps {
   title: string
   openApp: () => void
   icon: IconProps["icon"]
-  iconType: AppProps["iconType"]
-}
-
-export interface DockShortcutProps extends DesktopShortcutProps {
-  windowHandlers: WindowRef
-  getOpen: () => boolean
-  closeApp: () => void
+  iconMaskClassName: string
 }

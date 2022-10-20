@@ -1,3 +1,5 @@
 export { default } from "./Dock"
 
-export type { DockProps } from "./interface"
+export { default as DockShortcut } from "./DockShortcut"
+
+export type { DockShortcutProps } from "./interface"

@@ -7,8 +7,9 @@ import {
   forwardRef,
   useImperativeHandle,
   useMemo,
+  useEffect,
 } from "react"
-import { useRnd, useMemoizedFn, useSetState, useResizeObserver } from "@chooks"
+import { useRnd, useMemoizedFn, useResizeObserver } from "@chooks"
 import type { RndStyle } from "@chooks"
 import { createPortal } from "react-dom"
 import { animated } from "@react-spring/web"
@@ -36,7 +37,6 @@ const transformRndStyle = (rndStyle: RndStyle) => ({
 
 function Window(
   {
-    id,
     title,
     children,
     minHeight,
@@ -50,16 +50,16 @@ function Window(
     onExpand,
     onExitFullscreen,
     getDockShortcut,
-    onShow,
-    onHide,
+    onShowed,
+    onHidden,
   }: WindowProps,
   ref?: ForwardedRef<WindowRef>,
 ) {
-  const [windowVisible, setWindowVisible] = useSetState(true)
+  const [windowVisible, setWindowVisible] = useState(true)
 
-  const [isFullscreen, setIsFullscreen] = useSetState(false)
+  const [isFullscreen, setIsFullscreen] = useState(false)
 
-  const [isMinimized, setIsActivated] = useSetState(true)
+  const [isMinimized, setIsActivated] = useState(true)
 
   const [isMaximized, setIsMaximized] = useState(false)
 
@@ -96,7 +96,7 @@ function Window(
     },
   })
 
-  const zIndex = useMemo(() => windowZIndex.set(id, (Z_INDEX += 1)), [id])
+  const zIndex = useMemo(() => windowZIndex.set(title, (Z_INDEX += 1)), [title])
 
   const [style, setStyle] = useState({
     zIndex,
@@ -117,10 +117,10 @@ function Window(
   const setZIndex = useMemoizedFn(() => {
     const maxZIndex = windowZIndex.maxZIndex()
 
-    if (windowZIndex.get(id) < maxZIndex) {
+    if (windowZIndex.get(title) < maxZIndex) {
       setStyle((prev) => ({
         ...prev,
-        zIndex: windowZIndex.set(id, (Z_INDEX += 1)),
+        zIndex: windowZIndex.set(title, (Z_INDEX += 1)),
       }))
     }
   })
@@ -168,20 +168,20 @@ function Window(
         height: clientHeight,
         x: 0,
         y: 0,
-        // scale: 1,
-        // opacity: 1,
         config: {
           duration: FULLSCREEN_DURATION,
         },
       })
-      setIsFullscreen(true, onFullscreen)
+      setIsFullscreen(true)
+      onFullscreen?.()
     }
   })
 
   const exitFullscreen = useMemoizedFn(() => {
     if (isFullscreen) {
       restore(fullscreenBeforeState.current.get())
-      setIsFullscreen(false, onExitFullscreen)
+      setIsFullscreen(false)
+      onExitFullscreen?.()
     }
   })
 
@@ -204,8 +204,6 @@ function Window(
       rndApi.start({
         x: 0,
         y: TOP_BAR_HEIGHT,
-        // opacity: 1,
-        // scale: 1,
         config: {
           duration: FULLSCREEN_DURATION,
         },
@@ -248,18 +246,19 @@ function Window(
           duration: MINIMIZE_DURATION,
         },
         onRest: () => {
-          // setDisplay("none")
+          setDisplay("none")
         },
       })
-      setIsActivated(false, onMinimize)
+      setIsActivated(false)
+      onMinimize?.()
     }
   })
 
   const expand = useMemoizedFn(() => {
     if (!isMinimized) {
-      // restore(minimizeBeforeState.current.get(), () => setDisplay("block"))
-      restore(minimizeBeforeState.current.get())
-      setIsActivated(true, onExpand)
+      restore(minimizeBeforeState.current.get(), () => setDisplay("block"))
+      setIsActivated(true)
+      onExpand?.()
       setZIndex()
     }
   })
@@ -268,7 +267,6 @@ function Window(
     if (!windowVisible) {
       setWindowVisible(true)
       setDisplay("block")
-      onShow?.()
     }
   })
 
@@ -276,7 +274,6 @@ function Window(
     if (windowVisible) {
       setWindowVisible(false)
       setDisplay("none")
-      onHide?.()
     }
   })
 
@@ -333,8 +330,15 @@ function Window(
     200,
   )
 
+  useEffect(() => {
+    if (windowVisible) {
+      onShowed?.()
+      return onHidden
+    }
+  }, [onHidden, onShowed, windowVisible])
+
   return createPortal(
-    <div key={id}>
+    <div key={title}>
       <animated.div
         style={mergedStyle}
         onMouseDown={setZIndex}

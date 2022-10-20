@@ -11,7 +11,7 @@ import {
 import type { HTMLAttributes, MouseEvent, Ref } from "react"
 import { createPortal } from "react-dom"
 import { cloneElement, supportRef, composeRef, addEventListener } from "@utils"
-import { useMemoizedFn } from "@chooks"
+import { useMemoizedFn, useUnmount } from "@chooks"
 import { isFunction, reduce } from "lodash"
 import Popup from "./Popup"
 import type { TriggerProps, Position, LongPressEvent } from "./interface"
@@ -75,6 +75,12 @@ const Trigger = forwardRef<HTMLElement, TriggerProps>(
 
     const prevVisible = useRef<boolean>(false)
 
+    const close = useMemoizedFn(() => {
+      if (popupVisible) {
+        setPopupVisible(false)
+      }
+    })
+
     const setPopupVisible = useMemoizedFn((visible: boolean) => {
       if (prevPopuoVisible.current !== visible) {
         // prevVisible.current === propsVisible 表示 trigger 内部调用的 setPopupVisible
@@ -88,12 +94,16 @@ const Trigger = forwardRef<HTMLElement, TriggerProps>(
         }
 
         if (visible && groupContext) {
-          groupContext.currentPopup?.close()
-          groupContext.setCurrentPopup(null)
-          setPopupVisibleImpl(true)
-        } else {
-          setPopupVisibleImpl(visible)
+          if (
+            groupContext.currentPopup &&
+            groupContext.currentPopup.close !== close
+          ) {
+            // https://github.com/facebook/react/issues/18178#issuecomment-595846312
+            setTimeout(groupContext.currentPopup.close, 0)
+            groupContext.setCurrentPopup(null)
+          }
         }
+        setPopupVisibleImpl(visible)
       }
       prevPopuoVisible.current = visible
     })
@@ -325,12 +335,6 @@ const Trigger = forwardRef<HTMLElement, TriggerProps>(
       handleMouseLeave,
     ])
 
-    const close = useMemoizedFn(() => {
-      if (popupVisible) {
-        setPopupVisible(false)
-      }
-    })
-
     const onDocumentClick = useMemoizedFn((event) => {
       const root = getTriggerDOMNode()
       const popupNode = popupRef.current
@@ -356,9 +360,10 @@ const Trigger = forwardRef<HTMLElement, TriggerProps>(
       ) {
         groupContext.setCurrentPopup({
           close,
+          action,
         })
       }
-    }, [close, groupContext, popupVisible, isAction])
+    }, [close, groupContext, popupVisible, isAction, action])
 
     // clickOutside
     useEffect(() => {
@@ -411,6 +416,10 @@ const Trigger = forwardRef<HTMLElement, TriggerProps>(
         }
       }
     }, [close, getDocument, getTriggerDOMNode, isAction, popupVisible])
+
+    useUnmount(() => {
+      timer.current && clearTimeout(timer.current)
+    })
 
     useImperativeHandle(ref, () => triggerRef.current, [])
 

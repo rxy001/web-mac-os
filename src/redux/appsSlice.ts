@@ -5,19 +5,18 @@ import type { RootState } from "./index"
 
 type Key = string
 type App = {
-  id: string
   title: string
   renderDockShortcut: (a?: number, b?: number) => JSX.Element
 }
 
 interface AppsState {
-  all: {
+  inDock: {
     [key: Key]: App
   }
 }
 
 const initialState: AppsState = {
-  all: {},
+  inDock: {},
 }
 
 const appsSlice = createSlice({
@@ -32,8 +31,8 @@ const appsSlice = createSlice({
       }>,
     ) => {
       const { key, app } = action.payload
-      state.all = {
-        ...state.all,
+      state.inDock = {
+        ...state.inDock,
         [key]: app,
       }
     },
@@ -44,14 +43,14 @@ const appsSlice = createSlice({
       }>,
     ) => {
       const { key } = action.payload
-      state.all = omit(state.all, [key])
+      state.inDock = omit(state.inDock, [key])
     },
   },
 })
 
 export const { pushApp, removeApp } = appsSlice.actions
 
-export const selectApps = (state: RootState) => state.apps.all
+export const selectApps = (state: RootState) => state.apps.inDock
 
 export const reducers = appsSlice.reducer
 

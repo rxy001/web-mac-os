@@ -47,33 +47,33 @@ function Topbar({ left, right }: TopbarProps) {
 
   const fullscreenApps = useRef(new Set<string>())
 
-  App.useAppSubscribe(App.EventType.Fullscreen, (appName) => {
+  App.useAppSubscribe(App.EventType.WINDOW_FULLSCREEN, (appName) => {
     if (!fullscreenApps.current.size) {
       hideTopbar()
     }
     fullscreenApps.current.add(appName)
   })
 
-  App.useAppSubscribe(App.EventType.ExitFullScreen, (appName) => {
+  App.useAppSubscribe(App.EventType.WINDOW_EXIT_FULLSCREEN, (appName) => {
     fullscreenApps.current.delete(appName)
     if (!fullscreenApps.current.size) {
       showTopbar()
     }
   })
 
-  App.useAppSubscribe(App.EventType.Minimize, (appName) => {
+  App.useAppSubscribe(App.EventType.WINDOW_MINIMIZE, (appName) => {
     if (fullscreenApps.current.has(appName)) {
       showTopbar()
     }
   })
 
-  App.useAppSubscribe(App.EventType.Expand, (appName) => {
+  App.useAppSubscribe(App.EventType.WINDOW_EXPAND, (appName) => {
     if (fullscreenApps.current.has(appName)) {
       hideTopbar()
     }
   })
 
-  App.useAppSubscribe(App.EventType.Close, (appName) => {
+  App.useAppSubscribe(App.EventType.APP_CLOSE, (appName) => {
     if (fullscreenApps.current.delete(appName)) {
       showTopbar()
     }

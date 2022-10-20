@@ -11,8 +11,7 @@ const Tooltip = forwardRef<HTMLDivElement, TooltipProps>(
     {
       text,
       children,
-      visible,
-      onVisibleChange,
+
       defaultVisible,
       placement = "top",
       arrow = true,
@@ -69,10 +68,8 @@ const Tooltip = forwardRef<HTMLDivElement, TooltipProps>(
       <Trigger
         ref={ref}
         action={trigger}
-        visible={visible}
         popupPlacement={placement}
         defaultPopupVisible={defaultVisible}
-        onVisibleChange={onVisibleChange}
         popup={renderPopup}
         {...props}
       >

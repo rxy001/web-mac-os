@@ -49,6 +49,7 @@ export type CurrentMotion = {
 
 export type CurrentPopup = {
   close: () => void
+  action: string
 } | null
 
 export interface GroupContextType {
