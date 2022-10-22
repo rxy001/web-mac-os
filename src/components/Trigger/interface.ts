@@ -24,7 +24,7 @@ export interface TriggerProps extends DOMEvents {
   action: ActionType
   defaultPopupVisible?: boolean
   getTriggerDOMNode?: () => HTMLElement
-  popupPlacement?: "top" | "bottom"
+  popupPlacement?: PopupProps["placement"]
   visible?: boolean
   onVisibleChange?: (p: boolean) => void
 }
@@ -33,7 +33,13 @@ export interface PopupProps {
   children: ReactNode
   visible?: boolean
   getTriggerDOMNode: () => HTMLElement
-  placement?: "top" | "bottom"
+  placement?:
+    | "top"
+    | "bottom"
+    | "topLeft"
+    | "topRight"
+    | "bottomLeft"
+    | "bottomRight"
 }
 
 export interface MotionProps {

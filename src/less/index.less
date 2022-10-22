@@ -16,9 +16,48 @@ div {
   user-select: none;
 }
 
+html {
+  color: var(--app-font-color);
+}
+
 :global(#root) {
   height: 100%;
   width: 100%;
   position: relative;
   font-size: 14px;
+}
+
+// light
+:root {
+  --app-color-white-hsl: 0, 0%, 100%;
+  --app-color-purple-hsl: 265, 17%, 14%;
+  --app-color-grey-100-hsl: 0, 0%, 96%;
+  --app-color-grey-900-hsl: 0, 0%, 13%;
+  --app-color-blue-hsl: 211, 100%, 50%;
+  --app-font-color: #333;
+  --app-desktop-bg: url("../assets/bg-light.jpg");
+  --app-topbar-bgc-from: #b738b7;
+  --app-topbar-bgc-to1: #fa7bbe;
+  --app-topbar-bgc-to2: #cb459e;
+  --app-popover-color-hsl: var(--app-color-white-hsl);
+  --window-header-color: #dfe1e5;
+  --window-content-bgc-hsl: var(--app-color-white-hsl);
+  --action-center-icon-color-hsl: var(--app-color-grey-100-hsl);
+}
+
+// dark
+:global(.dark) {
+  --app-topbar-bgc-from: #4b01a7;
+  --app-topbar-bgc-to1: #3700c4;
+  --app-topbar-bgc-to2: #3000ac;
+  --app-desktop-bg: url("../assets/bg-dark.jpg");
+  --app-popover-color-hsl: var(--app-color-purple-hsl);
+  --app-font-color: white;
+  --action-center-icon-color-hsl: var(--app-color-blue-hsl);
+  --window-header-color: #202124;
+  --window-content-bgc-hsl: var(--app-color-purple-hsl);
+}
+
+:global(html.dark) {
+  color-scheme: dark;
 }

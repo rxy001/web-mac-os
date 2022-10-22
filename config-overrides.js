@@ -53,7 +53,7 @@ module.exports = {
         as(entry) {
           if (/\.css$/.test(entry)) return "style"
           if (/\.woff$/.test(entry)) return "font"
-          if (/\.bmp$|\.gif$|\.jpe?g$|\.png$/.test(entry)) return "image"
+          if (/\.bmp$|\.gif$|\.jpe?g$|\.png$|\.svg$/.test(entry)) return "image"
           return "script"
         },
       }),

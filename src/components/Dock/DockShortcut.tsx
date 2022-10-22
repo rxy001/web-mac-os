@@ -1,9 +1,11 @@
-import { useMemoizedFn } from "@chooks"
+import { useMemoizedFn, useDebounceFn } from "@chooks"
 import classNames from "classnames"
 import { forwardRef, useMemo, useState, useReducer, useRef } from "react"
 import { Icon, Tooltip, Popover, Button, App } from "../index"
 import styles from "./css/dockShortcut.less"
 import type { DockShortcutProps } from "./interface"
+
+const DISTANCE = 20
 
 const DockShortcut = forwardRef<HTMLDivElement, DockShortcutProps>(
   (
@@ -29,6 +31,8 @@ const DockShortcut = forwardRef<HTMLDivElement, DockShortcutProps>(
     const isKeepInDock = useRef(defaultIsKeepInDock)
     const appOpen = useRef(!isKeepInDock.current)
     const windowVisible = useRef(!isKeepInDock.current)
+
+    const debounceRefresh = useDebounceFn(setIsRefresh, 150)
 
     const onPopoverVisibleChange = useMemoizedFn((v) => {
       if (!contextMenuVisible) {
@@ -64,7 +68,7 @@ const DockShortcut = forwardRef<HTMLDivElement, DockShortcutProps>(
     const refresh = (cb: () => void) => (appName: string) => {
       if (appName === title) {
         cb()
-        setIsRefresh()
+        debounceRefresh()
       }
     }
 
@@ -150,7 +154,16 @@ const DockShortcut = forwardRef<HTMLDivElement, DockShortcutProps>(
         </div>
       ),
       // eslint-disable-next-line react-hooks/exhaustive-deps
-      [isRefresh, closeApp, hideOptionMenu, openApp, showWindow, hideWindow],
+      [
+        isRefresh,
+        hideOptionMenu,
+        removeInDock,
+        keepInDock,
+        hideWindow,
+        showWindow,
+        closeApp,
+        openApp,
+      ],
     )
 
     return (
@@ -159,22 +172,21 @@ const DockShortcut = forwardRef<HTMLDivElement, DockShortcutProps>(
           visible={contextMenuVisible}
           content={renderOptionMenu}
           onVisibleChange={onContextMenuVisibleChange}
-          distance={15}
+          distance={DISTANCE}
           trigger="contextMenu"
         >
           <Popover
             visible={popoverVisible}
             content={renderOptionMenu}
             onVisibleChange={onPopoverVisibleChange}
-            distance={15}
+            distance={DISTANCE}
             trigger="longPress"
           >
             <Tooltip
               visible={tooltipVisible}
               onVisibleChange={onTooltipVisibleChange}
               text={title}
-              trigger="hover"
-              distance={15}
+              distance={DISTANCE}
             >
               <Icon
                 maskClassName={iconMaskClassName}

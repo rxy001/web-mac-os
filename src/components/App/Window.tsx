@@ -100,7 +100,7 @@ function Window(
 
   const [style, setStyle] = useState({
     zIndex,
-    display: "auto",
+    display: "flex",
   })
 
   const mergedStyle = useMemo(
@@ -125,7 +125,7 @@ function Window(
     }
   })
 
-  const setDisplay = useMemoizedFn((display: "none" | "block") => {
+  const setDisplay = useMemoizedFn((display: "none" | "flex") => {
     setStyle((prev) => {
       if (prev.display === display) {
         return prev
@@ -256,17 +256,18 @@ function Window(
 
   const expand = useMemoizedFn(() => {
     if (!isMinimized) {
-      restore(minimizeBeforeState.current.get(), () => setDisplay("block"))
+      restore(minimizeBeforeState.current.get(), () => setDisplay("flex"))
       setIsActivated(true)
       onExpand?.()
       setZIndex()
     }
+    if (!windowVisible) showWindow()
   })
 
   const showWindow = useMemoizedFn(() => {
     if (!windowVisible) {
       setWindowVisible(true)
-      setDisplay("block")
+      setDisplay("flex")
     }
   })
 
@@ -361,7 +362,7 @@ function Window(
             fullscreen={fullscreen}
           />
         )}
-        {children}
+        <div className={styles.content}>{children}</div>
       </animated.div>
     </div>,
     document.body,

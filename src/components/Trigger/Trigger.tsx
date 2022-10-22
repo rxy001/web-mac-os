@@ -61,8 +61,6 @@ const Trigger = forwardRef<HTMLElement, TriggerProps>(
 
     const isPressed = useRef(false)
 
-    const prevPopuoVisible = useRef(false)
-
     const startPosition = useRef<Position>()
 
     const timer = useRef<NodeJS.Timeout>()
@@ -72,6 +70,8 @@ const Trigger = forwardRef<HTMLElement, TriggerProps>(
     const [popupVisible, setPopupVisibleImpl] = useState(
       propsVisible ?? defaultPopupVisible,
     )
+
+    const prevPopuoVisible = useRef(popupVisible)
 
     const prevVisible = useRef<boolean>(false)
 

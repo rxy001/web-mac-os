@@ -1,7 +1,6 @@
-import { forwardRef, useMemo } from "react"
+import { forwardRef, useMemo, useRef } from "react"
 import classNames from "classnames"
 import { isFunction } from "lodash"
-import { useMemoizedFn } from "@chooks"
 import type { TooltipProps } from "./interface"
 import styles from "./css/tooltip.less"
 import Trigger from "../Trigger"
@@ -11,12 +10,12 @@ const Tooltip = forwardRef<HTMLDivElement, TooltipProps>(
     {
       text,
       children,
-
+      className,
       defaultVisible,
       placement = "top",
       arrow = true,
       trigger = "hover",
-      distance = 0,
+      distance = 6,
       ...props
     },
     ref,
@@ -24,6 +23,8 @@ const Tooltip = forwardRef<HTMLDivElement, TooltipProps>(
     const style = useMemo(() => {
       switch (placement) {
         case "bottom":
+        case "bottomLeft":
+        case "bottomRight":
           return {
             paddingTop: distance,
           }
@@ -34,35 +35,45 @@ const Tooltip = forwardRef<HTMLDivElement, TooltipProps>(
       }
     }, [distance, placement])
 
-    const renderPopup = useMemoizedFn(() => (
-      <div style={style} key="popup">
-        <div
-          className={classNames(styles.tooltip, {
-            [styles.tooltipTop]: arrow && placement === "top",
-            [styles.tooltipBottom]: arrow && placement !== "top",
-          })}
-        >
-          {arrow && (
-            <div
-              className={classNames(styles.arrow, {
-                [styles.arrowTop]: placement === "bottom",
-                [styles.arrowBottom]: placement !== "bottom",
-              })}
-            >
-              <span
-                className={classNames(styles.arrowContent, {
-                  [styles.arrowContentTop]: placement === "bottom",
-                  [styles.arrowContentBottom]: placement !== "bottom",
+    const container = useRef<HTMLDivElement>(null as any)
+
+    const popup = useMemo(
+      () => (
+        <div style={style} key="popup">
+          <div
+            ref={container}
+            className={classNames(styles.tooltip, {
+              [styles.tooltipTop]: arrow && placement.startsWith("top"),
+              [styles.tooltipBottom]: arrow && placement.startsWith("bottom"),
+            })}
+          >
+            {arrow && (
+              <div
+                className={classNames(styles.arrow, {
+                  [styles.arrowTop]: placement === "bottom",
+                  [styles.arrowTopLeft]: placement === "bottomLeft",
+                  [styles.arrowTopRight]: placement === "bottomRight",
+                  [styles.arrowBottom]: placement === "top",
+                  [styles.arrowBottomLeft]: placement === "topLeft",
+                  [styles.arrowBottomRight]: placement === "topRight",
                 })}
-              />
+              >
+                <span
+                  className={classNames(styles.arrowContent, {
+                    [styles.arrowContentTop]: placement.startsWith("bottom"),
+                    [styles.arrowContentBottom]: placement.startsWith("top"),
+                  })}
+                />
+              </div>
+            )}
+            <div className={classNames(styles.content, className)}>
+              {isFunction(text) ? text() : text}
             </div>
-          )}
-          <div className={styles.content}>
-            {isFunction(text) ? text() : text}
           </div>
         </div>
-      </div>
-    ))
+      ),
+      [arrow, className, placement, style, text],
+    )
 
     return (
       <Trigger
@@ -70,7 +81,7 @@ const Tooltip = forwardRef<HTMLDivElement, TooltipProps>(
         action={trigger}
         popupPlacement={placement}
         defaultPopupVisible={defaultVisible}
-        popup={renderPopup}
+        popup={popup}
         {...props}
       >
         {children}

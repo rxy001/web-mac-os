@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useEffect, useState, useRef } from "react"
 import { easings } from "@react-spring/web"
 import { Progress } from "@brc"
 import styles from "./css/splashScreen.less"
@@ -10,11 +10,16 @@ const config = {
 
 export default function SplashScreen() {
   const [visible, setVisible] = useState(true)
+  const timer = useRef<NodeJS.Timeout>()
 
   useEffect(() => {
-    setTimeout(() => {
+    timer.current = setTimeout(() => {
       setVisible(false)
     }, 2200)
+
+    return () => {
+      timer.current && clearTimeout(timer.current)
+    }
   }, [])
 
   return visible ? (

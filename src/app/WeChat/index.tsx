@@ -14,7 +14,7 @@ function Application() {
     <App
       defaultSize={defaultSize}
       icon={wechatImg}
-      title="wechat"
+      title="WeChat"
       element={importWeChat}
     />
   )

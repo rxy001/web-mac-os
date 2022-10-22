@@ -1,6 +1,18 @@
-.mixin-position-center() {
+// @import "~@less/mixins.less";
+
+.positionCenter() {
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
+}
+
+.toggleThemeAnimation() {
+  transition: color, background, background-color 0.4s;
+}
+
+.flexCenter() {
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }

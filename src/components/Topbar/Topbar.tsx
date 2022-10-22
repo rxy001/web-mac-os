@@ -4,9 +4,9 @@ import { TOP_BAR_HEIGHT, FULLSCREEN_DURATION } from "@constants"
 import { useSpring, animated } from "@react-spring/web"
 import { useMemoizedFn } from "@chooks"
 import { App } from "../index"
-import styles from "./css/topBar.less"
 import type { TopbarProps } from "./interface"
-import { Clock, Bluetooth, Wifi, Volume, ActionCenter } from "./Widgets"
+import { Clock, Bluetooth, Wifi, Volume, ActionCenter } from "./widgets"
+import styles from "./css/topBar.less"
 
 function Topbar({ left, right }: TopbarProps) {
   const visible = useRef(true)

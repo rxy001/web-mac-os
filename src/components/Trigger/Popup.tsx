@@ -6,7 +6,7 @@ import {
   useState,
 } from "react"
 import { useMemoizedFn, useResizeObserver, useUnmount } from "@chooks"
-import { ceil, isEqual, max } from "lodash"
+import { ceil, isEqual } from "lodash"
 import { isDOMVisible } from "@utils"
 import styles from "./css/trigger.less"
 import Motion from "./Motion"
@@ -38,21 +38,53 @@ const Popup = forwardRef<HTMLDivElement, PopupProps>(
           motionRef.current.getBoundingClientRect()
 
         const newPosition = {
-          left: max([triggerLeft + (triggerWidth - popupWidth) / 2, 0]) as any,
-          top: triggerTop,
+          left: 0,
+          top: 0,
         }
 
         switch (placement) {
           case "top":
             newPosition.top = ceil(triggerTop - popupHeight)
+            newPosition.left = triggerLeft + (triggerWidth - popupWidth) / 2
+            break
+
+          case "topLeft":
+            newPosition.top = ceil(triggerTop - popupHeight)
+            newPosition.left = triggerLeft
+            break
+
+          case "topRight":
+            newPosition.top = ceil(triggerTop - popupHeight)
+            newPosition.left = triggerLeft - (popupWidth - triggerWidth)
             break
 
           case "bottom":
             newPosition.top = ceil(triggerTop + triggerHeight)
+            newPosition.left = triggerLeft + (triggerWidth - popupWidth) / 2
+            break
+
+          case "bottomLeft":
+            newPosition.top = ceil(triggerTop + triggerHeight)
+            newPosition.left = triggerLeft
+            break
+
+          case "bottomRight":
+            newPosition.top = ceil(triggerTop + triggerHeight)
+            newPosition.left = triggerLeft - (popupWidth - triggerWidth)
             break
 
           default:
             throw new Error(`not support placement ${placement}`)
+        }
+
+        const overflow =
+          popupWidth + newPosition.left - document.body.clientWidth
+        if (overflow > 0) {
+          newPosition.left -= overflow
+        }
+
+        if (newPosition.left < 0) {
+          newPosition.left = 0
         }
 
         if (isEqual(prevPosition.current, newPosition)) {

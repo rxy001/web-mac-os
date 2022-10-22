@@ -11,4 +11,5 @@ export interface TooltipProps
   defaultVisible?: TriggerProps["defaultPopupVisible"]
   distance?: number
   arrow?: boolean
+  className?: string
 }

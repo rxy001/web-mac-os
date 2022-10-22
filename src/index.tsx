@@ -6,6 +6,11 @@ import App from "./App"
 import reportWebVitals from "./reportWebVitals"
 import store from "./redux"
 import "./less/index.less"
+import darkMode from "./darkMode"
+
+if (darkMode.isDarkMode()) {
+  darkMode.toggleDarkMode()
+}
 
 const eventEmitter = createEventEmitter()
 

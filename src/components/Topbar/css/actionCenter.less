@@ -1,0 +1,51 @@
+@import "~@less/mixins.less";
+
+.actionCenter {
+  display: flex;
+  flex-wrap: wrap;
+
+  .moduels {
+    background-color: hsla(var(--app-popover-color-hsl), 0.4);
+    padding: 15px;
+    border-radius: 10px;
+    flex-shrink: 0;
+    box-shadow: inset 0 0 0 0.2px hsla(var(--app-color-grey-100-hsl), 0.7),
+      0 0 0 0.2px hsla(var(--app-color-grey-900-hsl), 0.7),
+      rgba(0, 0, 0, 15%) 0 0 7px 0;
+    color: var(--app-font-color);
+    .flexCenter();
+    .toggleThemeAnimation();
+
+    .iconWrapper {
+      background-color: hsla(var(--action-center-icon-color-hsl), 1);
+      width: 30px;
+      height: 30px;
+      border-radius: 20px;
+      .flexCenter();
+      .toggleThemeAnimation();
+    }
+
+    .label {
+      margin-left: 5px;
+      font-size: 14px;
+    }
+  }
+}
+
+.popup {
+  width: 300px;
+  height: 300px;
+  padding: 20px;
+  backdrop-filter: blur(10px);
+  background-color: hsla(var(--app-popover-color-hsl), 0.5);
+  border-radius: 15px;
+  box-shadow: inset 0 0 0 0.2px hsla(var(--app-color-grey-100-hsl), 0.7),
+    0 0 0 0.2px hsla(var(--app-color-grey-900-hsl), 0.7),
+    rgba(0, 0, 0, 30%) 2px 5px 19px 7px;
+  .toggleThemeAnimation();
+}
+
+.centerIcon {
+  height: 16px;
+  width: 16px;
+}

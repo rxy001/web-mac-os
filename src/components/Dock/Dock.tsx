@@ -39,10 +39,10 @@ function Dock() {
     () => ({
       ...springStyle,
       height: DOCK_HEIGHT,
+      boxShadow: size(runningApps) > 0 ? undefined : "none",
     }),
-    [springStyle],
+    [springStyle, runningApps],
   )
-
   const fullscreenApps = useRef(new Set<string>())
 
   const prevAppCount = useRef(0)

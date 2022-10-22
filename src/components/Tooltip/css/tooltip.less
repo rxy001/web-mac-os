@@ -1,5 +1,5 @@
 @import "~@less/variables.less";
-@tooltipBgC: #e8e8e8;
+@import "~@less/mixins.less";
 @arrowSize: 12px;
 @boxShadowColor: #00000012;
 
@@ -7,12 +7,36 @@
   position: relative;
 
   .arrowTop {
+    left: 50%;
     transform: translate(-50%, -100%);
+  }
+
+  .arrowTopLeft {
+    left: 0;
+    transform: translate(0, -100%);
+  }
+
+  .arrowTopRight {
+    right: 0;
+    transform: translate(0, -100%);
   }
 
   .arrowBottom {
     transform: translate(-50%, 100%);
     bottom: 0;
+    left: 50%;
+  }
+
+  .arrowBottomLeft {
+    transform: translate(0, 100%);
+    bottom: 0;
+    left: 0;
+  }
+
+  .arrowBottomRight {
+    transform: translate(0, 100%);
+    bottom: 0;
+    right: 0;
   }
 
   .arrow {
@@ -23,18 +47,19 @@
     overflow: hidden;
     background: transparent;
     pointer-events: none;
-    left: 50%;
 
     .arrowContent {
       position: absolute;
       width: @arrowSize;
       height: @arrowSize;
       border-radius: 0 0 3px;
-      background-color: @tooltipBgC;
+      background-color: hsla(var(--window-content-bgc-hsl), 0.9);
+      backdrop-filter: blur(15px);
       pointer-events: none;
-      // box-shadow: 3px 3px 7px @boxShadowColor;
       margin: auto;
       inset: 0;
+      box-shadow: 3px 3px 7px #00000012;
+      .toggleThemeAnimation();
     }
 
     .arrowContentBottom {
@@ -45,20 +70,14 @@
       transform: translateY((@arrowSize)) rotate(-135deg);
     }
   }
-
-  .content {
-    padding: 2px 10px;
-    background-color: @tooltipBgC;
-    border-radius: 5px;
-    // box-shadow: @containerBoxShadow;
-    white-space: nowrap;
-  }
 }
 
-.tooltipTop {
-  transform: translateY((@arrowSize / -2));
-}
-
-.tooltipBottom {
-  transform: translateY((@arrowSize / 2));
+.content {
+  padding: 2px 10px;
+  background-color: hsla(var(--window-content-bgc-hsl), 0.8);
+  backdrop-filter: blur(15px);
+  border-radius: 5px;
+  box-shadow: @containerBoxShadow;
+  white-space: nowrap;
+  .toggleThemeAnimation();
 }

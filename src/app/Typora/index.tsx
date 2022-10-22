@@ -13,7 +13,7 @@ function Application() {
     <App
       defaultSize={defaultSize}
       icon={typoraImg}
-      title="typora"
+      title="Typora"
       element={importTypora}
     />
   )
