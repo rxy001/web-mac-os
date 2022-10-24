@@ -1,84 +1,18 @@
-import type { ComponentType, ReactElement } from "react"
-import type { RndBind, Position, Size } from "@chooks"
+import type { ComponentType } from "react"
 import type { Listener } from "@eventEmitter"
-import type { IconProps } from "../index"
-import type { EventType } from "./hooks"
+import type { IconProps, WindowRef, WindowProps } from "../index"
 
 export type UseApp = () => AppContextProps
 
-interface CommonType {
-  minHeight?: number
-  minWidth?: number
-  maxHeight?: number
-  maxWidth?: number
-  defaultSize: Size
-  defaultPosition?: Position
-  title: string
+export interface AppContextProps
+  extends Omit<WindowRef, "subscribe" | "unSubscribe"> {
+  subscribe: (event: AppEmitEventType, listener: Listener) => void
+  unSubscribe: (event: AppEmitEventType, listener: Listener) => void
 }
-
-export interface AppContextProps extends WindowRef {
-  subscribe: (event: EventType, listener: Listener) => void
-  unSubscribe: (event: EventType, listener: Listener) => void
-}
-export interface AppProps extends CommonType {
+export interface AppProps extends Omit<WindowProps, "children"> {
   icon: IconProps["icon"]
   iconType?: "round" | "circle"
   element: () => Promise<{ default: ComponentType }>
-}
-
-export interface WindowProps extends CommonType {
-  children: ReactElement
-  style?: any
-  onFullscreen?: () => void
-  onExitFullscreen?: () => void
-  onMinimize?: () => void
-  onExpand?: () => void
-  getDockShortcut?: () => HTMLDivElement
-  onShowed?: () => void
-  onHidden?: () => void
-}
-
-export type WindowEventType =
-  | "fullscreen"
-  | "exitFullscreen"
-  | "minimize"
-  | "expand"
-  | "maximize"
-  | "exitMaximized"
-  | "isMinimized"
-  | "isFullscreen"
-  | "isMaximized"
-  | "showWindow"
-  | "hideWindow"
-  | "isShow"
-
-export interface WindowRef {
-  fullscreen: () => void
-  exitFullscreen: () => void
-  minimize: () => void
-  expand: () => void
-  maximize: () => void
-  exitMaximized: () => void
-  isMinimized: () => boolean
-  isFullscreen: () => boolean
-  isMaximized: () => boolean
-  showWindow: () => void
-  hideWindow: () => void
-  isShow: () => boolean
-}
-
-export interface WindowHeaderProps {
-  title: string
-  dragBind: RndBind
-  className?: string
-  isFullscreen: boolean
-  isMaximized: boolean
-  minimize: () => void
-  exitMaximized: () => void
-  exitFullscreen: () => void
-  hideWindow: () => void
-  maximize: () => void
-  fullscreen: () => void
 }
 
 export interface DesktopShortcutProps {
@@ -86,4 +20,31 @@ export interface DesktopShortcutProps {
   openApp: () => void
   icon: IconProps["icon"]
   iconMaskClassName: string
+}
+
+// 部分枚举值需要与 WindowEmitEventType 相同
+export enum AppEmitEventType {
+  APP_OPENED = "__APP_OPENED__",
+  APP_CLOSE = "__APP_CLOSE__",
+  APP_KEEP_IN_DOCK = "__APP_KEEP_IN_DOCK__",
+  APP_REMOVE_IN_DOCK = "__APP_REMOVE_IN_DOCK__",
+  APP_SHOWED = "__WINDOW_SHOWED__",
+  APP_HIDDEN = "__WINDOW_HIDDEN__",
+  APP_FULLSCREEN = "__WINDOW_FULLSCREEN__",
+  APP_EXIT_FULLSCREEN = "__WINDOW_EXIT_FULLSCREEN__",
+  APP_MINIMIZE = "__WINDOW_MINIMIZE__",
+  APP_EXPAND = "__WINDOW_EXPAND__",
+}
+
+export interface DockShortcutProps {
+  title: string
+  openApp: () => void
+  icon: IconProps["icon"]
+  iconMaskClassName: string
+  defaultIsKeepInDock: boolean
+  showWindow: () => void
+  hideWindow: () => void
+  closeApp: () => void
+  keepInDock: () => void
+  removeInDock: () => void
 }

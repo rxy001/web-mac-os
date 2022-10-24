@@ -5,22 +5,27 @@ import {
   useRef,
   memo,
   forwardRef,
-  useImperativeHandle,
   useMemo,
   useEffect,
+  useImperativeHandle,
 } from "react"
-import { useRnd, useMemoizedFn, useResizeObserver } from "@chooks"
+import { useEventEmitter } from "@eventEmitter"
+import type { Listener } from "@eventEmitter"
+import { useRnd, useMemoizedFn, useResizeObserver, useUnmount } from "@chooks"
 import type { RndStyle } from "@chooks"
 import { createPortal } from "react-dom"
 import { animated } from "@react-spring/web"
 import { DOCK_HEIGHT, FULLSCREEN_DURATION, TOP_BAR_HEIGHT } from "@constants"
 import styles from "./css/window.less"
 import type { WindowProps, WindowRef } from "./interface"
+import { WindowEmitEventType } from "./interface"
 import WindowHeader from "./WindowHeader"
 import windowZIndex from "./windowZIndex"
 import BeforeState from "./BeforeState"
 import type { PreState } from "./BeforeState"
 import { WINDOW_HEADER_HEIGHT, MINIMIZE_DURATION } from "./constants"
+import { WindowContext } from "./context"
+import Thumbnail from "./Thumbnail"
 
 let Z_INDEX = 0
 
@@ -45,23 +50,22 @@ function Window(
     maxWidth,
     defaultSize,
     defaultPosition,
-    onFullscreen,
-    onMinimize,
-    onExpand,
-    onExitFullscreen,
-    getDockShortcut,
-    onShowed,
-    onHidden,
   }: WindowProps,
   ref?: ForwardedRef<WindowRef>,
 ) {
+  const eventEmitter = useEventEmitter()
+
+  const containerRef = useRef<HTMLDivElement>(null as any)
+
   const [windowVisible, setWindowVisible] = useState(true)
 
   const [isFullscreen, setIsFullscreen] = useState(false)
 
-  const [isMinimized, setIsActivated] = useState(true)
+  const [isMinimized, setIsMinimized] = useState(false)
 
   const [isMaximized, setIsMaximized] = useState(false)
+
+  const listeners = useRef(new Map())
 
   const [rndStyle, dragBind, resizeBind, rndApi] = useRnd({
     defaultSize,
@@ -78,19 +82,18 @@ function Window(
       opacity: 1,
     },
     enableResizing: !isFullscreen,
-    dragBounds: {
+    dragBounds: () => ({
       top: TOP_BAR_HEIGHT,
       bottom: window.innerHeight - WINDOW_HEADER_HEIGHT,
-    },
-    resizeBounds: {
+    }),
+    resizeBounds: () => ({
       top: TOP_BAR_HEIGHT,
       bottom: window.innerHeight - DOCK_HEIGHT,
-    },
+    }),
     onDrag({ event }) {
       event.stopPropagation()
       setIsMaximized(false)
     },
-
     onResize: () => {
       setIsMaximized(false)
     },
@@ -108,11 +111,11 @@ function Window(
     [rndStyle, style],
   )
 
-  const fullscreenBeforeState = useRef(new BeforeState())
+  const stateBeforeFullscreen = useRef(new BeforeState())
 
-  const maximizeBeforeState = useRef(new BeforeState())
+  const stateBeforeMaximize = useRef(new BeforeState())
 
-  const minimizeBeforeState = useRef(new BeforeState())
+  const stateBeforeMinimize = useRef(new BeforeState())
 
   const setZIndex = useMemoizedFn(() => {
     const maxZIndex = windowZIndex.maxZIndex()
@@ -137,7 +140,7 @@ function Window(
     })
   })
 
-  const restore = useMemoizedFn((state: PreState, onStart?: () => void) => {
+  const restore = useMemoizedFn((state: PreState) => {
     const { x, y, width, height, duration, opacity, scale } = state
 
     rndApi.start({
@@ -150,39 +153,7 @@ function Window(
       config: {
         duration,
       },
-      onStart,
     })
-  })
-
-  const fullscreen = useMemoizedFn(() => {
-    if (!isFullscreen) {
-      fullscreenBeforeState.current.set({
-        ...transformRndStyle(rndStyle),
-        duration: FULLSCREEN_DURATION,
-      })
-
-      const { clientWidth, clientHeight } = container
-
-      rndApi.start({
-        width: clientWidth,
-        height: clientHeight,
-        x: 0,
-        y: 0,
-        config: {
-          duration: FULLSCREEN_DURATION,
-        },
-      })
-      setIsFullscreen(true)
-      onFullscreen?.()
-    }
-  })
-
-  const exitFullscreen = useMemoizedFn(() => {
-    if (isFullscreen) {
-      restore(fullscreenBeforeState.current.get())
-      setIsFullscreen(false)
-      onExitFullscreen?.()
-    }
   })
 
   const getMaximizedSize = useMemoizedFn(() => {
@@ -194,19 +165,94 @@ function Window(
     }
   })
 
+  const minimizeImpl = useMemoizedFn((node: HTMLCanvasElement) => {
+    const { x, y } = node.getBoundingClientRect()
+    if (!isMinimized) {
+      const config = {
+        duration: MINIMIZE_DURATION,
+      }
+      stateBeforeMinimize.current.set({
+        ...transformRndStyle(rndStyle),
+        ...config,
+      })
+      rndApi.start({
+        x,
+        y,
+        config,
+        scale: 0.2,
+        opacity: 0,
+        onRest: () => {
+          setDisplay("none")
+        },
+      })
+      setIsMinimized(true)
+    }
+    eventEmitter.emit(WindowEmitEventType.WINDOW_MINIMIZE, title)
+  })
+
+  const renderThumbnail = useMemoizedFn(() => (
+    <Thumbnail
+      title={title}
+      expand={expand}
+      minimize={minimizeImpl}
+      containerRef={containerRef}
+    />
+  ))
+
+  const minimize = useMemoizedFn(() => {
+    eventEmitter.emit(
+      WindowEmitEventType.WINDOW_RENDER_THUMBNAIL,
+      title,
+      renderThumbnail,
+    )
+  })
+
+  const fullscreen = useMemoizedFn(() => {
+    if (!isFullscreen) {
+      const config = {
+        duration: FULLSCREEN_DURATION,
+      }
+      stateBeforeFullscreen.current.set({
+        ...transformRndStyle(rndStyle),
+        ...config,
+      })
+
+      const { clientWidth, clientHeight } = container
+
+      rndApi.start({
+        config,
+        width: clientWidth,
+        height: clientHeight,
+        x: 0,
+        y: 0,
+      })
+      setIsFullscreen(true)
+      eventEmitter.emit(WindowEmitEventType.WINDOW_FULLSCREEN, title)
+    }
+  })
+
+  const exitFullscreen = useMemoizedFn(() => {
+    if (isFullscreen) {
+      restore(stateBeforeFullscreen.current.get())
+      setIsFullscreen(false)
+      eventEmitter.emit(WindowEmitEventType.WINDOW_EXIT_FULLSCREEN, title)
+    }
+  })
+
   const maximize = useMemoizedFn(() => {
     if (!isMaximized) {
-      maximizeBeforeState.current.set({
-        ...transformRndStyle(rndStyle),
+      const config = {
         duration: FULLSCREEN_DURATION,
+      }
+      stateBeforeMaximize.current.set({
+        ...transformRndStyle(rndStyle),
+        ...config,
       })
 
       rndApi.start({
+        config,
         x: 0,
         y: TOP_BAR_HEIGHT,
-        config: {
-          duration: FULLSCREEN_DURATION,
-        },
         ...getMaximizedSize(),
       })
       setIsMaximized(true)
@@ -215,53 +261,24 @@ function Window(
 
   const exitMaximized = useMemoizedFn(() => {
     if (isMaximized) {
-      restore(maximizeBeforeState.current.get())
+      restore(stateBeforeMaximize.current.get())
       setIsMaximized(false)
     }
   })
 
-  const minimize = useMemoizedFn(() => {
-    let x = 0
-    let y = 0
-
-    if (getDockShortcut) {
-      ;({ x, y } = getDockShortcut().getBoundingClientRect())
-    } else {
-      const { width, height } = getMaximizedSize()
-      x = width / 2
-      y = height
-    }
-
-    if (isMinimized) {
-      minimizeBeforeState.current.set({
-        ...transformRndStyle(rndStyle),
-        duration: MINIMIZE_DURATION,
-      })
-      rndApi.start({
-        x,
-        y,
-        scale: 0.2,
-        opacity: 0,
-        config: {
-          duration: MINIMIZE_DURATION,
-        },
-        onRest: () => {
-          setDisplay("none")
-        },
-      })
-      setIsActivated(false)
-      onMinimize?.()
-    }
+  const expandImpl = useMemoizedFn(() => {
+    restore(stateBeforeMinimize.current.get())
+    setIsMinimized(false)
+    setZIndex()
+    eventEmitter.emit(WindowEmitEventType.WINDOW_REMOVE_THUMBNAIL, title)
+    eventEmitter.emit(WindowEmitEventType.WINDOW_EXPAND, title)
   })
 
   const expand = useMemoizedFn(() => {
-    if (!isMinimized) {
-      restore(minimizeBeforeState.current.get(), () => setDisplay("flex"))
-      setIsActivated(true)
-      onExpand?.()
-      setZIndex()
+    if (isMinimized) {
+      setDisplay("flex")
+      expandImpl()
     }
-    if (!windowVisible) showWindow()
   })
 
   const showWindow = useMemoizedFn(() => {
@@ -275,6 +292,15 @@ function Window(
     if (windowVisible) {
       setWindowVisible(false)
       setDisplay("none")
+
+      if (isMinimized) {
+        expandImpl()
+      }
+      if (isFullscreen) {
+        exitFullscreen()
+      }
+
+      eventEmitter.emit(WindowEmitEventType.WINDOW_REMOVE_THUMBNAIL, title)
     }
   })
 
@@ -283,25 +309,42 @@ function Window(
   const getIsMaximized = useMemoizedFn(() => isMaximized)
   const getVisible = useMemoizedFn(() => windowVisible)
 
-  useImperativeHandle(
-    ref,
-    () => ({
-      minimize,
-      expand,
-      fullscreen,
-      exitFullscreen,
-      maximize,
-      exitMaximized,
-      showWindow,
-      hideWindow,
-      isShow: getVisible,
-      isMinimized: getIsMinimized,
-      isFullscreen: getIsFullscreen,
-      isMaximized: getIsMaximized,
-    }),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [],
+  const subscribe = useMemoizedFn(
+    (event: WindowEmitEventType, listener: Listener) => {
+      function l(t: string) {
+        if (t === title) listener()
+      }
+      listeners.current.set(listener, { event, listener: l })
+      eventEmitter.on(event, l)
+    },
   )
+
+  const unSubscribe = useMemoizedFn(
+    (event: WindowEmitEventType, listener: Listener) => {
+      const { listener: l } = listeners.current.get(listener)
+      listeners.current.delete(l)
+      eventEmitter.off(event, l)
+    },
+  )
+
+  const windowRef = useRef<WindowRef>({
+    minimize,
+    expand,
+    fullscreen,
+    maximize,
+    exitMaximized,
+    exitFullscreen,
+    showWindow,
+    hideWindow,
+    subscribe,
+    unSubscribe,
+    isShow: getVisible,
+    isMinimized: getIsMinimized,
+    isFullscreen: getIsFullscreen,
+    isMaximized: getIsMaximized,
+  })
+
+  useImperativeHandle(ref, () => windowRef.current, [])
 
   useResizeObserver(
     document.body,
@@ -316,8 +359,8 @@ function Window(
         })
 
         if (isMaximized) {
-          fullscreenBeforeState.current.set({
-            ...fullscreenBeforeState.current.get(),
+          stateBeforeFullscreen.current.set({
+            ...stateBeforeFullscreen.current.get(),
             ...getMaximizedSize(),
           })
         }
@@ -333,22 +376,29 @@ function Window(
 
   useEffect(() => {
     if (windowVisible) {
-      onShowed?.()
-      return onHidden
+      eventEmitter.emit(WindowEmitEventType.WINDOW_SHOWED, title)
+
+      return () => {
+        eventEmitter.emit(WindowEmitEventType.WINDOW_HIDDEN, title)
+      }
     }
-  }, [onHidden, onShowed, windowVisible])
+  }, [eventEmitter, title, windowVisible])
+
+  useUnmount(() => {
+    eventEmitter.emit(WindowEmitEventType.WINDOW_REMOVE_THUMBNAIL, title)
+  })
 
   return createPortal(
     <div key={title}>
-      <animated.div
-        style={mergedStyle}
-        onMouseDown={setZIndex}
-        className={classNames(styles.window, {
-          [styles.fullscreen]: isFullscreen,
-        })}
-        {...resizeBind()}
-      >
-        {isMinimized && (
+      <WindowContext.Provider value={windowRef.current}>
+        <animated.div
+          style={mergedStyle}
+          onMouseDown={setZIndex}
+          className={classNames(styles.window, {
+            [styles.fullscreen]: isFullscreen,
+          })}
+          {...resizeBind()}
+        >
           <WindowHeader
             title={title}
             dragBind={dragBind}
@@ -361,9 +411,11 @@ function Window(
             maximize={maximize}
             fullscreen={fullscreen}
           />
-        )}
-        <div className={styles.content}>{children}</div>
-      </animated.div>
+          <div ref={containerRef} className={styles.content}>
+            {children}
+          </div>
+        </animated.div>
+      </WindowContext.Provider>
     </div>,
     document.body,
   )

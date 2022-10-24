@@ -12,21 +12,17 @@ import {
 import { reduce } from "lodash"
 import { useEventEmitter } from "@eventEmitter"
 import type { Listener } from "@eventEmitter"
-import Window from "./Window"
 import { DockShortcut } from "../Dock"
 import DesktopShortcut from "./DesktopShortcut"
 import { pushApp, removeApp } from "../../redux/appsSlice"
 import { AppContext } from "./context"
-import type {
-  AppProps,
-  AppContextProps,
-  WindowRef,
-  WindowEventType,
-} from "./interface"
-import { EventType } from "./hooks"
+import type { AppProps, AppContextProps } from "./interface"
+import { AppEmitEventType } from "./interface"
+import { Window } from "../index"
+import type { WindowRef, WindowHandlerEventType } from "../index"
 import styles from "./css/app.less"
 
-const windowEventTypes: WindowEventType[] = [
+const windowEventTypes: WindowHandlerEventType[] = [
   "fullscreen",
   "exitFullscreen",
   "minimize",
@@ -71,8 +67,6 @@ function App({
     return local.keepInDock ?? true
   })
 
-  const dockShortcutRef = useRef<HTMLDivElement>(null as any)
-
   const listeners = useRef(new Map())
 
   const windowRef = useRef<WindowRef>(null as any)
@@ -84,8 +78,8 @@ function App({
     throw new Error(`${element} is not a function`)
   }, [element])
 
-  const fireHandler = useMemoizedFn<(p: WindowEventType) => any>(
-    (type: WindowEventType) => {
+  const fireHandler = useMemoizedFn<(p: WindowHandlerEventType) => any>(
+    (type) => {
       if (windowRef.current) {
         return windowRef.current[type]()
       }
@@ -95,7 +89,7 @@ function App({
 
   const windowHandlers = useMemo(
     () =>
-      reduce<WindowEventType, WindowRef>(
+      reduce<WindowHandlerEventType, WindowRef>(
         windowEventTypes,
         (obj, type) => {
           obj[type] = () => fireHandler(type)
@@ -105,8 +99,6 @@ function App({
       ),
     [fireHandler],
   )
-
-  const getDockShortcut = useMemoizedFn(() => dockShortcutRef.current)
 
   const openApp = useMemoizedFn(() => {
     if (!open) {
@@ -123,7 +115,7 @@ function App({
   const onShortcutClick = useMemoizedFn(() => {
     if (!open) {
       openApp()
-    } else if (windowRef.current?.isMinimized() === false) {
+    } else if (windowRef.current?.isMinimized()) {
       windowRef.current.expand()
     } else {
       windowRef.current.showWindow()
@@ -138,7 +130,8 @@ function App({
         keepInDock: true,
       })
       setIsKeepInDock(true)
-      onAppKeepInDock()
+
+      eventEmitter.emit(AppEmitEventType.APP_KEEP_IN_DOCK, title)
     }
   })
 
@@ -169,104 +162,74 @@ function App({
       title={title}
       defaultIsKeepInDock={isKeepInDock}
       iconMaskClassName={iconMaskClassName}
-      ref={dockShortcutRef}
       openApp={onShortcutClick}
       closeApp={closeApp}
       keepInDock={keepInDock}
       removeInDock={removeInDock}
       hideWindow={windowHandlers.hideWindow}
-      showWindow={windowHandlers.showWindow}
+      showWindow={onShortcutClick}
     />
   ))
 
+  const pushToRedux = useMemoizedFn(() => {
+    dispatch(
+      pushApp({
+        appName: title,
+        renderDockShortcut,
+      }),
+    )
+  })
+
+  const removeAppFromRedux = useMemoizedFn(() => {
+    dispatch(removeApp(title))
+  })
+
   const onAppOpened = useMemoizedFn(() => {
     if (!isKeepInDock) {
-      dispatch(
-        pushApp({
-          key: title,
-          app: {
-            title,
-            renderDockShortcut,
-          },
-        }),
-      )
+      pushToRedux()
     }
-
-    eventEmitter.emit(EventType.APP_OPENED, title)
+    eventEmitter.emit(AppEmitEventType.APP_OPENED, title)
   })
 
   const onAppClosed = useMemoizedFn(() => {
     if (!isKeepInDock) {
-      dispatch(
-        removeApp({
-          key: title,
-        }),
-      )
+      removeAppFromRedux()
     }
 
-    eventEmitter.emit(EventType.APP_CLOSE, title)
-  })
-
-  const onAppKeepInDock = useMemoizedFn(() => {
-    eventEmitter.emit(EventType.APP_KEEP_IN_DOCK, title)
+    eventEmitter.emit(AppEmitEventType.APP_CLOSE, title)
   })
 
   const onAppRemoveInDock = useMemoizedFn(() => {
     if (!open) {
-      dispatch(
-        removeApp({
-          key: title,
-        }),
-      )
+      removeAppFromRedux()
     }
 
-    eventEmitter.emit(EventType.APP_REMOVE_IN_DOCK, title)
+    eventEmitter.emit(AppEmitEventType.APP_REMOVE_IN_DOCK, title)
   })
 
-  const onWindowFullscreen = useMemoizedFn(() => {
-    eventEmitter.emit(EventType.WINDOW_FULLSCREEN, title)
-  })
-
-  const onWindowExitFullscreen = useMemoizedFn(() => {
-    eventEmitter.emit(EventType.WINDOW_EXIT_FULLSCREEN, title)
-  })
-
-  const onWindowMinimize = useMemoizedFn(() => {
-    eventEmitter.emit(EventType.WINDOW_MINIMIZE, title)
-  })
-  const onWindowExpand = useMemoizedFn(() => {
-    eventEmitter.emit(EventType.WINDOW_EXPAND, title)
-  })
-
-  const onWindowShowed = useMemoizedFn(() => {
-    eventEmitter.emit(EventType.WINDOW_SHOWED, title)
-  })
-
-  const onWindowHidden = useMemoizedFn(() => {
-    eventEmitter.emit(EventType.WINDOW_HIDDEN, title)
-  })
-
-  const subscribe = useMemoizedFn((event: EventType, listener: Listener) => {
-    function l(t: string) {
-      if (t === title) {
-        listener()
+  const subscribe = useMemoizedFn(
+    (event: AppEmitEventType, listener: Listener) => {
+      function l(t: string) {
+        if (t === title) listener()
       }
-    }
-    listeners.current.set(listener, { event, listener })
-    eventEmitter.on(event, l)
-  })
+      listeners.current.set(listener, { event, listener: l })
+      eventEmitter.on(event, l)
+    },
+  )
 
-  const unSubscribe = useMemoizedFn((event: EventType, listener: Listener) => {
-    const { listener: l } = listeners.current.get(listener)
-    listeners.current.delete(l)
-    eventEmitter.off(event, l)
-  })
+  const unSubscribe = useMemoizedFn(
+    (event: AppEmitEventType, listener: Listener) => {
+      const { listener: l } = listeners.current.get(listener)
+      listeners.current.delete(l)
+      eventEmitter.off(event, l)
+    },
+  )
 
   const app = useMemo<AppContextProps>(
     () => ({
+      ...windowHandlers,
       subscribe,
       unSubscribe,
-      ...windowHandlers,
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [],
@@ -274,15 +237,7 @@ function App({
 
   useMount(() => {
     if (isKeepInDock) {
-      dispatch(
-        pushApp({
-          key: title,
-          app: {
-            title,
-            renderDockShortcut,
-          },
-        }),
-      )
+      pushToRedux()
     }
   })
 
@@ -311,19 +266,12 @@ function App({
         <Window
           title={title}
           ref={windowRef}
-          getDockShortcut={getDockShortcut}
           minHeight={minHeight}
           minWidth={minWidth}
           maxHeight={maxHeight}
           maxWidth={maxWidth}
           defaultSize={defaultSize}
           defaultPosition={defaultPosition}
-          onFullscreen={onWindowFullscreen}
-          onMinimize={onWindowMinimize}
-          onExpand={onWindowExpand}
-          onExitFullscreen={onWindowExitFullscreen}
-          onShowed={onWindowShowed}
-          onHidden={onWindowHidden}
         >
           {children}
         </Window>

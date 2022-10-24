@@ -28,3 +28,6 @@ export type { TopbarProps } from "./Topbar"
 
 export { default as Popover } from "./Popover"
 export type { PopoverProps } from "./Popover"
+
+export { default as Window, WindowEmitEventType } from "./Window"
+export type { WindowProps, WindowRef, WindowHandlerEventType } from "./Window"

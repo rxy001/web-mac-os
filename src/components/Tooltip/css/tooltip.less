@@ -5,6 +5,7 @@
 
 .tooltip {
   position: relative;
+  box-shadow: @containerBoxShadow;
 
   .arrowTop {
     left: 50%;
@@ -53,7 +54,7 @@
       width: @arrowSize;
       height: @arrowSize;
       border-radius: 0 0 3px;
-      background-color: hsla(var(--window-content-bgc-hsl), 0.9);
+      background-color: hsla(var(--window-content-bgc-hsl), 0.8);
       backdrop-filter: blur(15px);
       pointer-events: none;
       margin: auto;
@@ -77,7 +78,6 @@
   background-color: hsla(var(--window-content-bgc-hsl), 0.8);
   backdrop-filter: blur(15px);
   border-radius: 5px;
-  box-shadow: @containerBoxShadow;
   white-space: nowrap;
   .toggleThemeAnimation();
 }

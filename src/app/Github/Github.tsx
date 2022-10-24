@@ -40,10 +40,10 @@ function Github() {
           >
             Github
           </a>
-          <span>仓库</span>
+          <span> 仓库</span>
         </p>
         <p>
-          如果觉得还不错点个 <Icon mask={false} icon="iconxingxing" />{" "}
+          如果觉得还不错点个 <Icon mask={false} icon="iconxingxing" />
           吧，谢谢！🙏
         </p>
       </div>

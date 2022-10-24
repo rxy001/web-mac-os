@@ -73,42 +73,42 @@ const DockShortcut = forwardRef<HTMLDivElement, DockShortcutProps>(
     }
 
     App.useAppSubscribe(
-      App.EventType.APP_OPENED,
+      App.EmitEventType.APP_OPENED,
       refresh(() => {
         appOpen.current = true
       }),
     )
 
     App.useAppSubscribe(
-      App.EventType.APP_CLOSE,
+      App.EmitEventType.APP_CLOSE,
       refresh(() => {
         appOpen.current = false
       }),
     )
 
     App.useAppSubscribe(
-      App.EventType.WINDOW_SHOWED,
+      App.EmitEventType.APP_SHOWED,
       refresh(() => {
         windowVisible.current = true
       }),
     )
 
     App.useAppSubscribe(
-      App.EventType.WINDOW_HIDDEN,
+      App.EmitEventType.APP_HIDDEN,
       refresh(() => {
         windowVisible.current = false
       }),
     )
 
     App.useAppSubscribe(
-      App.EventType.APP_KEEP_IN_DOCK,
+      App.EmitEventType.APP_KEEP_IN_DOCK,
       refresh(() => {
         isKeepInDock.current = true
       }),
     )
 
     App.useAppSubscribe(
-      App.EventType.APP_REMOVE_IN_DOCK,
+      App.EmitEventType.APP_REMOVE_IN_DOCK,
       refresh(() => {
         isKeepInDock.current = false
       }),

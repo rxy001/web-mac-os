@@ -1,14 +1,14 @@
 import classNames from "classnames"
 import { memo, useState } from "react"
 import { useMemoizedFn } from "@chooks"
-import styles from "./css/window.less"
+import styles from "./css/header.less"
 import { Icon } from "../index"
 import type { WindowHeaderProps } from "./interface"
 
 function WindowHeader({
   title,
-  className,
   dragBind,
+  className,
   isFullscreen,
   isMaximized,
   minimize,
@@ -55,7 +55,7 @@ function WindowHeader({
           />
         )}
       </div>
-      <div className={styles.minimizeIcon} onClick={minimize}>
+      <div className={styles.minimizeIcon} onClick={() => minimize()}>
         {isHover && (
           <Icon
             icon="iconsubtract"
@@ -92,5 +92,4 @@ function WindowHeader({
   )
 }
 
-// memo 没用，dragBind 引用在变
 export default memo(WindowHeader)

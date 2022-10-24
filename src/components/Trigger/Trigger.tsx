@@ -277,6 +277,7 @@ const Trigger = forwardRef<HTMLElement, TriggerProps>(
       } = {
         key: "trigger",
       }
+
       if (isAction("click")) {
         newProps.onClick = onClick
       } else {
@@ -330,8 +331,8 @@ const Trigger = forwardRef<HTMLElement, TriggerProps>(
       onMouseLeave,
       onContextMenu,
       onLongPressStart,
-      handleMouseMove,
       onLongPressEnd,
+      handleMouseMove,
       handleMouseLeave,
     ])
 

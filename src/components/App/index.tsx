@@ -1,18 +1,19 @@
 import App from "./App"
-import { EventType, useAppSubscribe, useApp } from "./hooks"
+import { useAppSubscribe, useApp } from "./hooks"
+import { AppEmitEventType } from "./interface"
 
 type AppType = typeof App
 interface Component extends AppType {
   useApp: typeof useApp
   useAppSubscribe: typeof useAppSubscribe
-  EventType: typeof EventType
+  EmitEventType: typeof AppEmitEventType
 }
 
 const iternalApp = App as Component
 
 iternalApp.useApp = useApp
 iternalApp.useAppSubscribe = useAppSubscribe
-iternalApp.EventType = EventType
+iternalApp.EmitEventType = AppEmitEventType
 
 export default iternalApp
 export type { AppProps } from "./interface"

@@ -48,7 +48,7 @@ export interface UseRndOptions {
   onDragEnd?: UserHandlers["onDragEnd"]
   axis?: CoordinatesConfig["axis"]
   disableDragging?: boolean
-  dragBounds?: Bounds
+  dragBounds?: Bounds | (() => Bounds)
 
   // resize options
   minWidth?: number
@@ -59,10 +59,10 @@ export interface UseRndOptions {
   onResize?: UserHandlers["onDrag"]
   onResizeEnd?: UserHandlers["onDragEnd"]
   enableResizing?: boolean
-  resizeBounds?: Bounds
+  resizeBounds?: Bounds | (() => Bounds)
 
   // common
-  bounds?: Bounds
+  bounds?: Bounds | (() => Bounds)
   defaultStyle?: DefaultStyle
   defaultPosition?: Position
   defaultSize?: Size

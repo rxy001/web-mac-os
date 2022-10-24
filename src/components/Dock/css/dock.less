@@ -4,11 +4,11 @@
   position: absolute;
   bottom: 0;
   left: 50%;
-  display: flex;
   border-radius: 14px;
   backdrop-filter: blur(10px);
   background-color: hsla(var(--app-popover-color-hsl), 0.5);
   z-index: 1000;
+  display: flex;
   align-items: center;
   overflow: hidden;
   box-sizing: content-box;
@@ -16,4 +16,9 @@
     0 0 0 0.2px hsla(var(--app-color-grey-900-hsl), 0.7),
     rgba(0, 0, 0, 30%) 2px 5px 19px 7px;
   .toggleThemeAnimation();
+
+  .divider {
+    width: 0;
+    border-left: 1px solid var(--app-font-color);
+  }
 }

@@ -1,7 +1,8 @@
-import { memo, useMemo, useRef, useEffect } from "react"
+import { memo, useMemo, useRef, useEffect, useState } from "react"
+import type { ReactElement } from "react"
 import { useAppSelector, useMemoizedFn } from "@chooks"
-import { map, size } from "lodash"
-import { useSpring, animated } from "@react-spring/web"
+import { findIndex, size, some } from "lodash"
+import { useSpring, animated, useTransition } from "@react-spring/web"
 import {
   ICON_WRAPPER_SIZE,
   DOCK_HEIGHT,
@@ -10,42 +11,86 @@ import {
 } from "@constants"
 import { createPortal } from "react-dom"
 import { selectApps } from "@slice/appsSlice"
-import { App, Tooltip } from "../index"
+import { Window, Tooltip } from "../index"
 import styles from "./css/dock.less"
 
+const THUMBNAIL_WIDTH = 60
+
 const iconWrapperStyle = {
-  width: ICON_WRAPPER_SIZE,
-  height: DOCK_HEIGHT - ICON_WRAPPER_PADDING * 2,
   padding: ICON_WRAPPER_PADDING,
-  flex: "none",
+  height: ICON_WRAPPER_SIZE,
+  width: ICON_WRAPPER_SIZE,
   marginBottom: 5,
 }
 
+const thumbnailStyle = {
+  padding: ICON_WRAPPER_PADDING,
+  height: 40,
+  width: THUMBNAIL_WIDTH,
+  marginBottom: 5,
+}
+
+const dividerStyle = {
+  height: ICON_WRAPPER_SIZE,
+  margin: `0 ${ICON_WRAPPER_PADDING}px`,
+}
+
+const springConfig = (width: number) => ({
+  key: (item: any) => item.appName,
+  from: {
+    width: 0,
+    opacity: 0,
+    overflow: "hidden",
+  },
+  enter: { width, opacity: 1 },
+  leave: {
+    width: 0,
+    opacity: 0,
+  },
+  config: {
+    duration: 150,
+  },
+})
+
 function Dock() {
+  const prevAppCount = useRef(0)
+
   const visible = useRef(true)
 
-  const runningApps = useAppSelector(selectApps)
+  const appsInDock = useAppSelector(selectApps)
 
   const [springStyle, api] = useSpring(() => ({
-    width: 0,
     y: 0,
     paddingLeft: 0,
     paddingRight: 0,
-    x: "-50%",
     opacity: 1,
+    x: "-50%",
   }))
 
   const mergedStyle = useMemo(
     () => ({
       ...springStyle,
       height: DOCK_HEIGHT,
-      boxShadow: size(runningApps) > 0 ? undefined : "none",
+      boxShadow: size(appsInDock) > 0 ? undefined : "none",
     }),
-    [springStyle, runningApps],
+    [springStyle, appsInDock],
   )
-  const fullscreenApps = useRef(new Set<string>())
 
-  const prevAppCount = useRef(0)
+  const [minimizedApps, setMinimizedApps] = useState<
+    { appName: string; renderThumbnail: () => ReactElement }[]
+  >([])
+
+  const minimizedTransitions = useTransition(
+    minimizedApps,
+    springConfig(THUMBNAIL_WIDTH),
+  )
+
+  const keepInDockTransitions = useTransition(
+    appsInDock,
+    springConfig(ICON_WRAPPER_SIZE),
+  )
+
+  const fullscreenApps = useRef(new Set<string>())
 
   const hideDock = useMemoizedFn(() => {
     if (visible.current) {
@@ -73,72 +118,106 @@ function Dock() {
     }
   })
 
-  App.useAppSubscribe(App.EventType.WINDOW_FULLSCREEN, (appName) => {
+  Window.useAppSubscribe(Window.EmitEventType.WINDOW_FULLSCREEN, (appName) => {
     if (!fullscreenApps.current.size) {
       hideDock()
     }
     fullscreenApps.current.add(appName)
   })
 
-  App.useAppSubscribe(App.EventType.WINDOW_EXIT_FULLSCREEN, (appName) => {
-    fullscreenApps.current.delete(appName)
-    if (!fullscreenApps.current.size) {
-      showDock()
-    }
-  })
+  Window.useAppSubscribe(
+    Window.EmitEventType.WINDOW_EXIT_FULLSCREEN,
+    (appName) => {
+      fullscreenApps.current.delete(appName)
+      if (!fullscreenApps.current.size) {
+        showDock()
+      }
+    },
+  )
 
-  App.useAppSubscribe(App.EventType.WINDOW_MINIMIZE, (appName) => {
+  Window.useAppSubscribe(Window.EmitEventType.WINDOW_MINIMIZE, (appName) => {
     if (fullscreenApps.current.has(appName)) {
       showDock()
     }
   })
 
-  App.useAppSubscribe(App.EventType.WINDOW_EXPAND, (appName) => {
+  Window.useAppSubscribe(Window.EmitEventType.WINDOW_EXPAND, (appName) => {
     if (fullscreenApps.current.has(appName)) {
       hideDock()
     }
   })
 
-  App.useAppSubscribe(App.EventType.APP_CLOSE, (appName) => {
+  Window.useAppSubscribe(Window.EmitEventType.WINDOW_HIDDEN, (appName) => {
     if (fullscreenApps.current.delete(appName)) {
       showDock()
     }
   })
 
-  useEffect(() => {
-    const length = size(runningApps)
-
-    if (prevAppCount.current !== length) {
-      const config = {
-        duration: 200,
+  Window.useAppSubscribe(
+    Window.EmitEventType.WINDOW_RENDER_THUMBNAIL,
+    (appName: string, renderThumbnail: () => ReactElement) => {
+      if (!some(minimizedApps, (v) => v.appName === appName)) {
+        setMinimizedApps([...minimizedApps, { appName, renderThumbnail }])
       }
-      if (length > 0) {
+    },
+  )
+
+  Window.useAppSubscribe(
+    Window.EmitEventType.WINDOW_REMOVE_THUMBNAIL,
+    (appName: string) => {
+      const index = findIndex(minimizedApps, ["appName", appName])
+      if (index !== -1) {
+        const temp = [...minimizedApps]
+        temp.splice(index, 1)
+        setMinimizedApps(temp)
+      }
+    },
+  )
+
+  useEffect(() => {
+    const appCount = size(appsInDock)
+
+    const config = {
+      duration: 200,
+    }
+
+    if (
+      (prevAppCount.current > 0 && appCount === 0) ||
+      (prevAppCount.current === 0 && appCount > 0)
+    ) {
+      if (appCount > 0) {
         api.start({
-          width: ICON_WRAPPER_SIZE * length,
           paddingLeft: ICON_WRAPPER_PADDING,
           paddingRight: ICON_WRAPPER_PADDING,
           config,
         })
-      } else if (!length) {
+      } else if (!appCount) {
         api.start({
-          width: 0,
           paddingLeft: 0,
           paddingRight: 0,
           config,
         })
       }
-
-      prevAppCount.current = length
     }
-  }, [runningApps, api])
+
+    prevAppCount.current = appCount
+  }, [appsInDock, api, minimizedApps])
 
   return createPortal(
     <animated.div key="dock" style={mergedStyle} className={styles.dockWrapper}>
       <Tooltip.Group>
-        {map(runningApps, ({ title, renderDockShortcut }) => (
-          <div key={title} style={iconWrapperStyle}>
-            {renderDockShortcut()}
-          </div>
+        {keepInDockTransitions((style, item) => (
+          <animated.div style={style}>
+            <div style={iconWrapperStyle}> {item.renderDockShortcut()}</div>
+          </animated.div>
+        ))}
+        {!!(size(minimizedApps) && size(appsInDock)) && (
+          <div style={dividerStyle} className={styles.divider} />
+        )}
+        {minimizedTransitions((style, item) => (
+          <animated.div style={style}>
+            <div style={thumbnailStyle}>{item.renderThumbnail()}</div>
+          </animated.div>
         ))}
       </Tooltip.Group>
     </animated.div>,

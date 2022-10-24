@@ -1,0 +1,62 @@
+@import "~@less/mixins.less";
+
+.operation {
+  display: flex;
+  color: #000;
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  touch-action: none;
+
+  .maskClassName {
+    border-radius: 15px;
+  }
+
+  .closeIcon {
+    margin-right: 8px;
+    background-color: #fe6057;
+  }
+
+  .minimizeIcon {
+    margin-right: 8px;
+    background-color: #febc2e;
+  }
+
+  .fullscreenIcon {
+    background-color: #27c840;
+  }
+
+  > div {
+    width: 15px;
+    height: 15px;
+    border-radius: 7px;
+    .flexCenter();
+
+    .icon {
+      width: 15px;
+      height: 15px;
+      padding: 2px;
+    }
+  }
+}
+
+.header {
+  min-width: 200px;
+  height: 34px;
+  position: relative;
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+  background-color: var(--window-header-color);
+  box-shadow: 0 2px #0000001f;
+  display: flex;
+  flex-shrink: 0;
+  .toggleThemeAnimation();
+
+  .title {
+    min-width: 300px;
+    width: 100%;
+    height: 100%;
+    touch-action: none;
+    .flexCenter();
+  }
+}
