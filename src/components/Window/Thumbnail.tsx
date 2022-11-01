@@ -1,5 +1,6 @@
-import { useMount } from "@chooks"
+import { useMemoizedFn, useMount } from "@chooks"
 import { memo, useRef } from "react"
+import type { MouseEvent } from "react"
 import html2canvas from "html2canvas"
 import { Tooltip } from "../index"
 import styles from "./css/window.less"
@@ -9,6 +10,10 @@ function Thumbnail({ title, minimize, expand, containerRef }: ThumbnailProps) {
   const thumbnailRef = useRef<HTMLCanvasElement>(null as any)
   const rect = useRef(containerRef.current.getBoundingClientRect())
 
+  const onContextMenu = useMemoizedFn((e: MouseEvent<HTMLCanvasElement>) => {
+    e.preventDefault()
+  })
+
   useMount(() => {
     html2canvas(containerRef.current, {
       imageTimeout: 0,
@@ -17,6 +22,7 @@ function Thumbnail({ title, minimize, expand, containerRef }: ThumbnailProps) {
       minimize(thumbnailRef.current)
     })
   })
+
   return (
     <Tooltip text={title} distance={25}>
       <canvas
@@ -25,6 +31,7 @@ function Thumbnail({ title, minimize, expand, containerRef }: ThumbnailProps) {
         height={rect.current.height * 2}
         ref={thumbnailRef}
         onClick={expand}
+        onContextMenu={onContextMenu}
         className={styles.thumbnail}
       />
     </Tooltip>

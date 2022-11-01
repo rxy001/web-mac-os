@@ -1,4 +1,3 @@
-import type { ComponentType } from "react"
 import type { Listener } from "@eventEmitter"
 import type { IconProps, WindowRef, WindowProps } from "../index"
 
@@ -9,10 +8,9 @@ export interface AppContextProps
   subscribe: (event: AppEmitEventType, listener: Listener) => void
   unSubscribe: (event: AppEmitEventType, listener: Listener) => void
 }
-export interface AppProps extends Omit<WindowProps, "children"> {
+export interface AppProps extends WindowProps {
   icon: IconProps["icon"]
   iconType?: "round" | "circle"
-  element: () => Promise<{ default: ComponentType }>
 }
 
 export interface DesktopShortcutProps {

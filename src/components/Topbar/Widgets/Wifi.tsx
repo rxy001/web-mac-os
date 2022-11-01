@@ -2,7 +2,7 @@ import { Icon } from "@brc"
 import { memo } from "react"
 
 const style = {
-  width: 18,
+  width: 36,
   height: 18,
 }
 

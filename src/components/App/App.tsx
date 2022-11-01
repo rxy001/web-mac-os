@@ -1,6 +1,5 @@
 import classNames from "classnames"
 import { memo, useEffect, useMemo, useRef, useState } from "react"
-import { asyncLoadComponent } from "@utils"
 import { connect } from "react-redux"
 import {
   useAppDispatch,
@@ -37,7 +36,7 @@ const windowEventTypes: WindowHandlerEventType[] = [
   "isShow",
 ]
 
-const storagePrefix = "__app__"
+const storagePrefix = "__App__"
 
 // todo：点击桌面图标打开app 后 ，dockShortcut 下面不显示原点
 function App({
@@ -70,13 +69,6 @@ function App({
   const listeners = useRef(new Map())
 
   const windowRef = useRef<WindowRef>(null as any)
-
-  const children = useMemo(() => {
-    if (typeof element === "function") {
-      return asyncLoadComponent(element)
-    }
-    throw new Error(`${element} is not a function`)
-  }, [element])
 
   const fireHandler = useMemoizedFn<(p: WindowHandlerEventType) => any>(
     (type) => {
@@ -272,9 +264,8 @@ function App({
           maxWidth={maxWidth}
           defaultSize={defaultSize}
           defaultPosition={defaultPosition}
-        >
-          {children}
-        </Window>
+          element={element}
+        />
       )}
     </AppContext.Provider>
   )

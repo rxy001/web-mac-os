@@ -1,4 +1,4 @@
-import type { ReactElement, MutableRefObject } from "react"
+import type { ComponentType, MutableRefObject } from "react"
 import type { RndBind, Position, Size } from "@chooks"
 import type { Listener } from "@eventEmitter"
 
@@ -25,7 +25,7 @@ export interface WindowProps {
   defaultSize: Size
   defaultPosition?: Position
   title: string
-  children: ReactElement
+  element: () => Promise<{ default: ComponentType }>
 }
 
 export type WindowHandlerEventType =

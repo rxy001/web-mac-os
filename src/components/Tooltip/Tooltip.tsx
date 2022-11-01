@@ -40,13 +40,7 @@ const Tooltip = forwardRef<HTMLDivElement, TooltipProps>(
     const popup = useMemo(
       () => (
         <div style={style} key="popup">
-          <div
-            ref={container}
-            className={classNames(styles.tooltip, {
-              [styles.tooltipTop]: arrow && placement.startsWith("top"),
-              [styles.tooltipBottom]: arrow && placement.startsWith("bottom"),
-            })}
-          >
+          <div ref={container} className={classNames(styles.tooltip)}>
             {arrow && (
               <div
                 className={classNames(styles.arrow, {

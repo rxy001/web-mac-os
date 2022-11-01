@@ -3,6 +3,8 @@ import { useInterval } from "@chooks"
 
 const style = {
   letterSpacing: 1,
+  padding: "0 10px",
+  marginRight: "10px",
 }
 
 function getTime() {

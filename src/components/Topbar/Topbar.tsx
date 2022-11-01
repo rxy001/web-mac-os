@@ -1,12 +1,12 @@
 import { memo, useRef } from "react"
 import { createPortal } from "react-dom"
-import { TOP_BAR_HEIGHT, FULLSCREEN_DURATION } from "@constants"
+import { TOPBAR_HEIGHT, FULLSCREEN_DURATION } from "@constants"
 import { useSpring, animated } from "@react-spring/web"
 import { useMemoizedFn } from "@chooks"
 import { Window } from "../index"
 import type { TopbarProps } from "./interface"
 import { Clock, Bluetooth, Wifi, Volume, ActionCenter } from "./widgets"
-import styles from "./css/topBar.less"
+import styles from "./css/topbar.less"
 
 function Topbar({ left, right }: TopbarProps) {
   const visible = useRef(true)
@@ -14,7 +14,7 @@ function Topbar({ left, right }: TopbarProps) {
   const [style, api] = useSpring(() => ({
     y: 0,
     opacity: 1,
-    height: TOP_BAR_HEIGHT,
+    height: TOPBAR_HEIGHT,
   }))
 
   const hideTopbar = useMemoizedFn(() => {
@@ -22,7 +22,7 @@ function Topbar({ left, right }: TopbarProps) {
       visible.current = false
 
       api.start({
-        y: -TOP_BAR_HEIGHT,
+        y: -TOPBAR_HEIGHT,
         opacity: 0,
         config: {
           duration: FULLSCREEN_DURATION,
@@ -83,9 +83,9 @@ function Topbar({ left, right }: TopbarProps) {
   })
 
   return createPortal(
-    <animated.div key="topBar" style={style} className={styles.topBar}>
-      <div className={styles.topBarLeft}>{left}</div>
-      <div className={styles.topBarRight}>
+    <animated.div style={style} className={styles.topbar}>
+      <div className={styles.topbarLeft}>{left}</div>
+      <div className={styles.topbarRight}>
         {right}
         <Volume />
         <Bluetooth />

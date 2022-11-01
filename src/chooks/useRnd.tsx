@@ -89,8 +89,8 @@ const useRnd = ({
   enableResizing = false,
   minHeight = 200,
   minWidth = 200,
-  maxWidth,
-  maxHeight,
+  maxWidth = Infinity,
+  maxHeight = Infinity,
   resizeBounds,
 
   // common
@@ -174,7 +174,10 @@ const useRnd = ({
 
       function dragTop() {
         // 向下拖动时，y的最大值，最小高度
-        props.y = min([offsetY, memoizedY + memoizedHeight - minHeight])
+        props.y = max([
+          min([offsetY, memoizedY + memoizedHeight - minHeight]),
+          memoizedY + memoizedHeight - maxHeight,
+        ])
         props.height = min([
           max([memoizedHeight - movementY, minHeight]),
           maxHeight,
@@ -184,7 +187,7 @@ const useRnd = ({
       function dragRight() {
         // 向右拖动时，最小宽度
         props.width = min([
-          max([memoizedWidth + movementX, minHeight]),
+          max([memoizedWidth + movementX, minWidth]),
           maxWidth,
         ])
       }
@@ -199,9 +202,12 @@ const useRnd = ({
 
       function dragLeft() {
         // 向右拖动时，y的最大值，最小宽度
-        props.x = min([offsetX, memoizedX + memoizedWidth - minWidth])
+        props.x = max([
+          min([offsetX, memoizedX + memoizedWidth - minWidth]),
+          memoizedX + memoizedWidth - maxWidth,
+        ])
         props.width = min([
-          max([memoizedWidth - movementX, minHeight]),
+          max([memoizedWidth - movementX, minWidth]),
           maxWidth,
         ])
       }

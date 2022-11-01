@@ -8,11 +8,15 @@ const {
   addWebpackAlias,
   addWebpackResolve,
   addWebpackPlugin,
+  setWebpackOptimizationSplitChunks,
 } = require("customize-cra")
 const PreloadWebpackPlugin = require("@vue/preload-webpack-plugin")
 
 const appDirectory = fs.realpathSync(process.cwd())
 const resolveApp = (relativePath) => path.resolve(appDirectory, relativePath)
+const webpackEnv = process.env.NODE_ENV
+const isEnvProduction = webpackEnv === "production"
+const isEnvDevelopment = webpackEnv === "development"
 
 const paths = {
   appSrc: resolveApp("src"),
@@ -58,6 +62,12 @@ module.exports = {
         },
       }),
     ),
+    setWebpackOptimizationSplitChunks(
+      isEnvProduction && {
+        chunks: "all",
+        name: false,
+      },
+    ),
   ),
   devServer: overrideDevServer(addServerConfig()),
 }
@@ -82,9 +92,6 @@ function addLessLoader() {
   return function addLessLoaderImpl(config) {
     const lessRegex = /\.less$/
 
-    const webpackEnv = process.env.NODE_ENV
-    const isEnvDevelopment = webpackEnv === "development"
-    const isEnvProduction = webpackEnv === "production"
     const shouldUseSourceMap = process.env.GENERATE_SOURCEMAP !== "false"
     const { publicPath } = config.output
     const shouldUseRelativeAssetPaths = publicPath === "./"

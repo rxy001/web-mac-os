@@ -1,7 +1,6 @@
 @import "~@less/mixins.less";
-@margin: 15px;
 
-.topBar {
+.topbar {
   position: absolute;
   top: 0;
   left: 0;
@@ -17,24 +16,17 @@
   color: white;
   .toggleThemeAnimation();
 
-  .topBarLeft {
+  .topbarLeft {
     float: left;
     height: 100%;
-    .flexCenter();
-
-    > * {
-      margin-left: @margin;
-    }
+    display: flex;
+    align-items: center;
   }
 
-  .topBarRight {
+  .topbarRight {
     float: right;
     height: 100%;
     display: flex;
     align-items: center;
-
-    > * {
-      margin-right: @margin;
-    }
   }
 }

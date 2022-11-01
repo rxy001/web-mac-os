@@ -1,4 +1,5 @@
-import { forEach, includes, isArray, keys, once } from "lodash"
+import { forEach, includes, isArray, keys } from "lodash"
+import { useRef } from "react"
 
 export interface UsePreloadProps<T> {
   image?: T
@@ -21,18 +22,24 @@ function preloadImage(sources: string[]) {
 function usePreload<T extends string | string[]>(
   props: UsePreloadProps<T>,
 ): void {
-  forEach(keys(props), (key: string) => {
-    const sources = props[key as keyof UsePreloadProps<T>]
-    if (sources) {
-      switch (key) {
-        case "image":
-          preloadImage(isArray(sources) ? sources : [sources])
-          break
-        default:
-          throw new Error("暂不支持预加载此格式")
+  const loaded = useRef(false)
+
+  if (loaded.current === false) {
+    forEach(keys(props), (key: string) => {
+      const sources = props[key as keyof UsePreloadProps<T>]
+
+      if (sources) {
+        switch (key) {
+          case "image":
+            preloadImage(isArray(sources) ? sources : [sources])
+            break
+          default:
+            throw new Error("暂不支持预加载此格式")
+        }
       }
-    }
-  })
+    })
+    loaded.current = true
+  }
 }
 
-export default once(usePreload)
+export default usePreload

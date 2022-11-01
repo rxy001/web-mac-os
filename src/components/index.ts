@@ -31,3 +31,6 @@ export type { PopoverProps } from "./Popover"
 
 export { default as Window, WindowEmitEventType } from "./Window"
 export type { WindowProps, WindowRef, WindowHandlerEventType } from "./Window"
+
+export { default as Dropdown } from "./Dropdown"
+export type { DropdownProps } from "./Dropdown"

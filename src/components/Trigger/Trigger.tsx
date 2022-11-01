@@ -93,6 +93,10 @@ const Trigger = forwardRef<HTMLElement, TriggerProps>(
           return
         }
 
+        if (propsVisible === undefined) {
+          onVisibleChange?.(visible)
+        }
+
         if (visible && groupContext) {
           if (
             groupContext.currentPopup &&
@@ -309,19 +313,13 @@ const Trigger = forwardRef<HTMLElement, TriggerProps>(
         newProps.onMouseUp = getHandler("onMouseUp")
       }
 
-      if (!isAction("hover")) {
-        newProps.onMouseLeave = getHandler("onMouseLeave")
-      }
-
       if (supportRef(child)) {
         newProps.ref = composeRef(triggerRef, (child as any).ref)
       }
 
-      const newChild = cloneElement(child, {
+      return cloneElement(child, {
         ...newProps,
       })
-
-      return newChild
     }, [
       children,
       isAction,

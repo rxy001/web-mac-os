@@ -9,13 +9,15 @@ import {
   useEffect,
   useImperativeHandle,
 } from "react"
+import { max } from "lodash"
+import { asyncLoadComponent } from "@utils"
 import { useEventEmitter } from "@eventEmitter"
 import type { Listener } from "@eventEmitter"
 import { useRnd, useMemoizedFn, useResizeObserver, useUnmount } from "@chooks"
 import type { RndStyle } from "@chooks"
 import { createPortal } from "react-dom"
 import { animated } from "@react-spring/web"
-import { DOCK_HEIGHT, FULLSCREEN_DURATION, TOP_BAR_HEIGHT } from "@constants"
+import { DOCK_HEIGHT, FULLSCREEN_DURATION, TOPBAR_HEIGHT } from "@constants"
 import styles from "./css/window.less"
 import type { WindowProps, WindowRef } from "./interface"
 import { WindowEmitEventType } from "./interface"
@@ -43,7 +45,7 @@ const transformRndStyle = (rndStyle: RndStyle) => ({
 function Window(
   {
     title,
-    children,
+    element,
     minHeight,
     minWidth,
     maxHeight,
@@ -74,7 +76,10 @@ function Window(
     maxHeight,
     maxWidth,
     defaultPosition: defaultPosition ?? {
-      x: document.body.clientWidth / 2 - defaultSize.width / 2,
+      x: max([
+        document.body.clientWidth / 2 - defaultSize.width / 2,
+        TOPBAR_HEIGHT,
+      ]) as number,
       y: document.body.clientHeight / 2 - defaultSize.height / 2,
     },
     defaultStyle: {
@@ -83,11 +88,11 @@ function Window(
     },
     enableResizing: !isFullscreen,
     dragBounds: () => ({
-      top: TOP_BAR_HEIGHT,
+      top: TOPBAR_HEIGHT,
       bottom: window.innerHeight - WINDOW_HEADER_HEIGHT,
     }),
     resizeBounds: () => ({
-      top: TOP_BAR_HEIGHT,
+      top: TOPBAR_HEIGHT,
       bottom: window.innerHeight - DOCK_HEIGHT,
     }),
     onDrag({ event }) {
@@ -161,7 +166,7 @@ function Window(
 
     return {
       width: clientWidth,
-      height: clientHeight - DOCK_HEIGHT - TOP_BAR_HEIGHT,
+      height: clientHeight - DOCK_HEIGHT - TOPBAR_HEIGHT,
     }
   })
 
@@ -252,7 +257,7 @@ function Window(
       rndApi.start({
         config,
         x: 0,
-        y: TOP_BAR_HEIGHT,
+        y: TOPBAR_HEIGHT,
         ...getMaximizedSize(),
       })
       setIsMaximized(true)
@@ -326,6 +331,13 @@ function Window(
       eventEmitter.off(event, l)
     },
   )
+
+  const children = useMemo(() => {
+    if (typeof element === "function") {
+      return asyncLoadComponent(element)
+    }
+    throw new Error(`${element} is not a function`)
+  }, [element])
 
   const windowRef = useRef<WindowRef>({
     minimize,

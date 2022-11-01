@@ -13,7 +13,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       {...props}
     >
       {icon && icon}
-      <span>{children}</span>
+      <span className={classNames({ [styles.text]: !!icon })}>{children}</span>
     </button>
   ),
 )

@@ -1,14 +1,16 @@
 @import "~@less/variables.less";
+@import "~@less/mixins.less";
 
 .button {
   font-size: 14px;
   padding: 6px 18px;
   transition: all 0.3s;
   border-radius: 3px;
+  background-color: var(--input-background-color);
   border: none;
-  background: #fff;
   outline: none;
   line-height: @baseLineHeight;
+  .toggleThemeAnimation();
 
   span {
     vertical-align: middle;
