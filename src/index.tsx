@@ -9,7 +9,7 @@ import "./less/index.less"
 import darkMode from "./darkMode"
 
 if (darkMode.isDarkMode()) {
-  darkMode.toggleDarkMode()
+  darkMode.addDarkClassName()
 }
 
 const eventEmitter = createEventEmitter()

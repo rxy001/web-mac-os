@@ -15,6 +15,9 @@ export default {
     html?.classList.remove(DARK)
     localStorage.setItem(KEY, LIGHT)
   },
+  addDarkClassName() {
+    html?.classList.add(DARK)
+  },
   isDarkMode() {
     const value = localStorage.getItem(KEY)
     if (value) {

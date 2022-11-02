@@ -2,19 +2,13 @@ import { memo, useState } from "react"
 import { Icon, Popover } from "@brc"
 import centerImg from "@assets/center.svg"
 import classNames from "classnames"
-import { useMemoizedFn, usePreload } from "@chooks"
+import { useMemoizedFn } from "@chooks"
 import darkMode from "../../../darkMode"
-import darkImage from "../../../assets/bg-dark.jpg"
-import lightImage from "../../../assets/bg-light.jpg"
 import styles from "../css/actionCenter.less"
 
 function ActionCenter() {
   const [ignore, setIsDark] = useState(darkMode.isDarkMode)
   const [visible, setVisible] = useState(false)
-
-  usePreload({
-    image: [darkImage, lightImage],
-  })
 
   const toggleMode = useMemoizedFn(() => {
     setIsDark((p) => {
