@@ -21,8 +21,9 @@ export interface DOMEvents {
 export interface TriggerProps extends DOMEvents {
   children: ReactElement
   popup?: ReactNode | (() => ReactNode)
-  action: ActionType
+  action: ActionType[] | ActionType
   defaultPopupVisible?: boolean
+  gerPopupContainer?: () => HTMLElement
   getTriggerDOMNode?: () => HTMLElement
   popupPlacement?: PopupProps["placement"]
   visible?: boolean
@@ -55,7 +56,6 @@ export type CurrentMotion = {
 
 export type CurrentPopup = {
   close: () => void
-  action: string
 } | null
 
 export interface GroupContextType {

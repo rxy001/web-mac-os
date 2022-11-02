@@ -207,17 +207,26 @@ function Dock() {
     <animated.div key="dock" style={mergedStyle} className={styles.dockWrapper}>
       <Tooltip.Group>
         {keepInDockTransitions((style, item) => (
-          <animated.div style={style}>
-            <div style={iconWrapperStyle}> {item.renderDockShortcut()}</div>
-          </animated.div>
+          // iconWrapperStyle 的宽高是固定了， animated.div 宽度在变化时要隐藏掉 iconWrapper 溢出的宽度，
+          // 所以 animated.div 使用了 overflow:hidden， 但也因此导致 DockShortcut 的 popover 被隐藏掉。
+          // 这里的 id 就是为了 DockShortcut 获取到 popupContainer，方式相比传递ref简单但不可靠。
+          // 另外宽度变化的动画无法在 DockShortcut 实现，动画还未执行 DockShortcut 就被卸载掉了。
+          // todo: 使用其他方法替换 id
+          <div className={styles.position} id={item.id}>
+            <animated.div style={style}>
+              <div style={iconWrapperStyle}>{item.renderDockShortcut()}</div>
+            </animated.div>
+          </div>
         ))}
         {!!(size(minimizedApps) && size(appsInDock)) && (
           <div style={dividerStyle} className={styles.divider} />
         )}
         {minimizedTransitions((style, item) => (
-          <animated.div style={style}>
-            <div style={thumbnailStyle}>{item.renderThumbnail()}</div>
-          </animated.div>
+          <div className={styles.position}>
+            <animated.div style={style}>
+              <div style={thumbnailStyle}>{item.renderThumbnail()}</div>
+            </animated.div>
+          </div>
         ))}
       </Tooltip.Group>
     </animated.div>,

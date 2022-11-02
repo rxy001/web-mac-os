@@ -1,4 +1,4 @@
-import { useMemoizedFn, useDebounceFn } from "@chooks"
+import { useMemoizedFn, useDebounceFn, useUnmount } from "@chooks"
 import classNames from "classnames"
 import { forwardRef, useMemo, useState, useReducer, useRef } from "react"
 import { Icon, Tooltip, Popover, Button, App } from "../index"
@@ -10,6 +10,7 @@ const DISTANCE = 20
 const DockShortcut = forwardRef<HTMLDivElement, DockShortcutProps>(
   (
     {
+      id,
       icon,
       title,
       openApp,
@@ -25,50 +26,44 @@ const DockShortcut = forwardRef<HTMLDivElement, DockShortcutProps>(
     ref,
   ) => {
     const [popoverVisible, setPopoverVisible] = useState(false)
-    const [contextMenuVisible, setContextMenuVisible] = useState(false)
     const [tooltipVisible, setTooltipVisible] = useState(false)
     const [isRefresh, setIsRefresh] = useReducer((x) => x + 1, 0)
     const isKeepInDock = useRef(defaultIsKeepInDock)
     const appOpen = useRef(!isKeepInDock.current)
     const windowVisible = useRef(!isKeepInDock.current)
-
-    const debounceRefresh = useDebounceFn(setIsRefresh, 150)
+    const isPressed = useRef(false)
+    const timeoutRefresh = useDebounceFn(setIsRefresh, 150)
+    const timeoutSetIsPressed = useDebounceFn(() => {
+      isPressed.current = false
+    }, 200)
 
     const onPopoverVisibleChange = useMemoizedFn((v) => {
-      if (!contextMenuVisible) {
+      if (!isPressed.current) {
         setPopoverVisible(v)
-        setTooltipVisible(false)
       }
-    })
-
-    const onContextMenuVisibleChange = useMemoizedFn((v) => {
-      if (!popoverVisible) {
-        setContextMenuVisible(v)
-        setTooltipVisible(false)
-      }
+      setTooltipVisible(false)
     })
 
     const onTooltipVisibleChange = useMemoizedFn((v) => {
-      if (!popoverVisible && !contextMenuVisible) {
+      if (!popoverVisible) {
         setTooltipVisible(v)
       }
     })
 
     const onClick = useMemoizedFn(() => {
-      if (!popoverVisible && !contextMenuVisible) {
+      if (!popoverVisible && !isPressed.current) {
         openApp()
       }
     })
 
     const hideOptionMenu = useMemoizedFn(() => {
-      if (contextMenuVisible) setContextMenuVisible(false)
       if (popoverVisible) setPopoverVisible(false)
     })
 
     const refresh = (cb: () => void) => (appName: string) => {
       if (appName === title) {
         cb()
-        debounceRefresh()
+        timeoutRefresh()
       }
     }
 
@@ -166,38 +161,56 @@ const DockShortcut = forwardRef<HTMLDivElement, DockShortcutProps>(
       ],
     )
 
+    const gerPopupContainer = useMemoizedFn(() =>
+      document.querySelector(`#${id}`),
+    )
+
+    const onMouseDown = useMemoizedFn(() => {
+      if (popoverVisible) {
+        setPopoverVisible(false)
+        isPressed.current = true
+      }
+    })
+
+    const onMouseUp = useMemoizedFn(() => {
+      if (isPressed.current) {
+        timeoutSetIsPressed()
+      }
+    })
+
+    useUnmount(() => {
+      timeoutSetIsPressed.cancel()
+      timeoutRefresh.cancel()
+    })
+
     return (
       <div className={styles.iconWrapper} {...props} ref={ref}>
         <Popover
-          visible={contextMenuVisible}
+          visible={popoverVisible}
           content={renderOptionMenu}
-          onVisibleChange={onContextMenuVisibleChange}
+          onVisibleChange={onPopoverVisibleChange}
           distance={DISTANCE}
-          trigger="contextMenu"
+          trigger={["longPress", "contextMenu"]}
+          gerPopupContainer={gerPopupContainer}
+          onMouseDown={onMouseDown}
+          onMouseUp={onMouseUp}
         >
-          <Popover
-            visible={popoverVisible}
-            content={renderOptionMenu}
-            onVisibleChange={onPopoverVisibleChange}
+          <Tooltip
+            visible={tooltipVisible}
+            onVisibleChange={onTooltipVisibleChange}
+            text={title}
             distance={DISTANCE}
-            trigger="longPress"
+            gerPopupContainer={gerPopupContainer}
           >
-            <Tooltip
-              visible={tooltipVisible}
-              onVisibleChange={onTooltipVisibleChange}
-              text={title}
-              distance={DISTANCE}
-            >
-              <Icon
-                maskClassName={iconMaskClassName}
-                className={classNames(styles.icon, {
-                  [styles.circle]: appOpen.current,
-                })}
-                onClick={onClick}
-                icon={icon}
-              />
-            </Tooltip>
-          </Popover>
+            <Icon
+              maskClassName={iconMaskClassName}
+              onClick={onClick}
+              icon={icon}
+              className={classNames(styles.icon, {
+                [styles.circle]: appOpen.current,
+              })}
+            />
+          </Tooltip>
         </Popover>
       </div>
     )

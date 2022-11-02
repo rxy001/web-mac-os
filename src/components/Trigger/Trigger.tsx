@@ -12,7 +12,7 @@ import type { HTMLAttributes, MouseEvent, Ref } from "react"
 import { createPortal } from "react-dom"
 import { cloneElement, supportRef, composeRef, addEventListener } from "@utils"
 import { useMemoizedFn, useUnmount } from "@chooks"
-import { isFunction, reduce } from "lodash"
+import { isFunction, reduce, isArray, includes, size } from "lodash"
 import Popup from "./Popup"
 import type { TriggerProps, Position, LongPressEvent } from "./interface"
 import { GroupContext } from "./context"
@@ -39,8 +39,9 @@ const handlerTypes: EventType[] = [
 
 // 1.children 必须支持 ref 获取到 dom， 非 forwardRef 组件可通过 getTriggerDOMNode 传递 dom
 // 2.children 必须支持 mouseenter mouseLeave click 事件
-// 3.Group 不支持 内所有 trigger.defaultPopupVisible 为 true
+// 3.Group 内不支持 所有 trigger.defaultPopupVisible 为 true
 // 4.除 hover 外其他的 action ，当通过非 trigger 本身去点击显隐 popup，需要 stopPropagation
+// 5.不支持，action 为 hover 时，鼠标移动到 popup， popup 不隐藏。
 
 const Trigger = forwardRef<HTMLElement, TriggerProps>(
   (
@@ -49,8 +50,9 @@ const Trigger = forwardRef<HTMLElement, TriggerProps>(
       action,
       children,
       onVisibleChange,
-      popupPlacement,
-      defaultPopupVisible,
+      gerPopupContainer,
+      popupPlacement = "top",
+      defaultPopupVisible = false,
       visible: propsVisible,
       getTriggerDOMNode: propsGetTriggerDOMNode,
       ...props
@@ -158,7 +160,9 @@ const Trigger = forwardRef<HTMLElement, TriggerProps>(
       return children.props[type] || props[type]
     })
 
-    const isAction = useMemoizedFn((a) => action === a)
+    const isAction = useMemoizedFn((a) =>
+      isArray(action) ? includes(action, a) : action === a,
+    )
 
     const getTriggerDOMNode = useMemoizedFn(() => {
       if (propsGetTriggerDOMNode) {
@@ -174,6 +178,7 @@ const Trigger = forwardRef<HTMLElement, TriggerProps>(
       return window.document
     })
 
+    // -----------------handle click start---------------
     const onClick = useMemoizedFn((event: MouseEvent) => {
       fireEvents("onClick", event)
       if (!popupVisible) {
@@ -183,6 +188,7 @@ const Trigger = forwardRef<HTMLElement, TriggerProps>(
       }
     })
 
+    // -----------------handle hover start---------------
     const onMouseEnter = useMemoizedFn((event: MouseEvent) => {
       fireEvents("onMouseEnter", event)
       setPopupVisible(true)
@@ -193,10 +199,14 @@ const Trigger = forwardRef<HTMLElement, TriggerProps>(
       close()
     })
 
+    // -----------------handle contextMenu start---------------
     const onContextMenu = useMemoizedFn((event: MouseEvent) => {
       fireEvents("onContextMenu", event)
-      setPopupVisible(true)
-
+      if (!popupVisible) {
+        setPopupVisible(true)
+      } else if (popupVisible) {
+        setPopupVisible(false)
+      }
       event.preventDefault()
     })
 
@@ -214,12 +224,7 @@ const Trigger = forwardRef<HTMLElement, TriggerProps>(
 
       timer.current = setTimeout(() => {
         isLongPressActive.current = true
-
-        if (!popupVisible) {
-          setPopupVisible(true)
-        } else if (popupVisible) {
-          setPopupVisible(false)
-        }
+        setPopupVisible(true)
       }, 800)
     })
 
@@ -231,25 +236,20 @@ const Trigger = forwardRef<HTMLElement, TriggerProps>(
     })
 
     const onLongPressEnd = useMemoizedFn((event: LongPressEvent<Element>) => {
-      fireEvents("onMouseUp", event as unknown as TouchEvent)
-
-      // if (
-      //   isLongPressActive.current &&
-      //   popupVisible
-      // ) {
-      //   isMouseUpOnTrigger.current = true
-      // }
+      fireEvents("onMouseUp", event as MouseEvent)
       cancel()
     })
 
-    const handleMouseLeave = useMemoizedFn((event: LongPressEvent<Element>) => {
-      fireEvents("onMouseLeave", event as unknown as TouchEvent)
+    const cancelOnMouseLeave = useMemoizedFn(
+      (event: LongPressEvent<Element>) => {
+        fireEvents("onMouseLeave", event as MouseEvent)
 
-      cancel()
-    })
+        cancel()
+      },
+    )
 
-    const handleMouseMove = useMemoizedFn((event: LongPressEvent<Element>) => {
-      fireEvents("onMouseMove", event as unknown as TouchEvent)
+    const onMouseMove = useMemoizedFn((event: LongPressEvent<Element>) => {
+      fireEvents("onMouseMove", event as MouseEvent)
 
       if (startPosition.current) {
         const currentPosition = getCurrentPosition(event)
@@ -270,7 +270,17 @@ const Trigger = forwardRef<HTMLElement, TriggerProps>(
       }
     })
 
+    const mouseLeaveHandler = useMemoizedFn((event: MouseEvent) => {
+      fireEvents("onMouseLeave", event)
+      close()
+      cancel()
+    })
+
     // -----------------handle long press end---------------
+
+    const getContainer = useMemoizedFn(
+      () => gerPopupContainer?.() ?? document.body,
+    )
 
     const trigger = useMemo(() => {
       const child = Children.only(children)
@@ -304,9 +314,13 @@ const Trigger = forwardRef<HTMLElement, TriggerProps>(
 
       if (isAction("longPress")) {
         newProps.onMouseDown = onLongPressStart
-        newProps.onMouseMove = handleMouseMove
+        newProps.onMouseMove = onMouseMove
         newProps.onMouseUp = onLongPressEnd
-        newProps.onMouseLeave = handleMouseLeave
+        if (isAction("hover")) {
+          newProps.onMouseLeave = mouseLeaveHandler
+        } else {
+          newProps.onMouseLeave = cancelOnMouseLeave
+        }
       } else {
         newProps.onMouseDown = getHandler("onMouseDown")
         newProps.onMouseMove = getHandler("onMouseMove")
@@ -329,10 +343,15 @@ const Trigger = forwardRef<HTMLElement, TriggerProps>(
       onMouseLeave,
       onContextMenu,
       onLongPressStart,
+      onMouseMove,
       onLongPressEnd,
-      handleMouseMove,
-      handleMouseLeave,
+      mouseLeaveHandler,
+      cancelOnMouseLeave,
     ])
+
+    const isOnlyAction = useMemoizedFn((a) =>
+      isArray(action) ? size(action) === 1 && action[0] === a : action === a,
+    )
 
     const onDocumentClick = useMemoizedFn((event) => {
       const root = getTriggerDOMNode()
@@ -341,8 +360,8 @@ const Trigger = forwardRef<HTMLElement, TriggerProps>(
 
       if (
         (!root.contains(target) ||
-          isAction("contextMenu") ||
-          isAction("longPress")) &&
+          isOnlyAction("contextMenu") ||
+          isOnlyAction("longPress")) &&
         !popupNode.contains(target)
       ) {
         close()
@@ -359,40 +378,18 @@ const Trigger = forwardRef<HTMLElement, TriggerProps>(
       ) {
         groupContext.setCurrentPopup({
           close,
-          action,
         })
       }
-    }, [close, groupContext, popupVisible, isAction, action])
+    }, [close, groupContext, popupVisible, isAction])
 
     // clickOutside
     useEffect(() => {
-      if (popupVisible && (isAction("click") || isAction("contextMenu"))) {
+      if (
+        popupVisible &&
+        (isAction("click") || isAction("contextMenu") || isAction("longPress"))
+      ) {
         const document = getDocument(getTriggerDOMNode())
-        return addEventListener(document, "click", onDocumentClick)
-      }
-
-      // longPress 如果过早的添加 click 事件会导致popup mouse up 时隐藏
-      if (popupVisible && isAction("longPress")) {
-        const document = getDocument(getTriggerDOMNode())
-
-        let removeListener: any = null
-        addEventListener(
-          document,
-          "click",
-          () => {
-            removeListener = addEventListener(
-              document,
-              "click",
-              onDocumentClick,
-            )
-          },
-          {
-            once: true,
-          },
-        )
-        return () => {
-          removeListener && removeListener()
-        }
+        return addEventListener(document, "mousedown", onDocumentClick)
       }
     }, [
       popupVisible,
@@ -402,16 +399,16 @@ const Trigger = forwardRef<HTMLElement, TriggerProps>(
       onDocumentClick,
     ])
 
-    // close popup when trigger type contains 'onContextMenu' and scroll or bulr
+    // close popup when trigger type contains 'onContextMenu' and scroll or blur
     useEffect(() => {
       if (popupVisible && isAction("contextMenu")) {
         const document = getDocument(getTriggerDOMNode())
         const scrollListener = addEventListener(document, "scroll", close)
-        const windowListener = addEventListener(window, "bulr", close)
+        const blurListener = addEventListener(window, "blur", close)
 
         return () => {
           scrollListener()
-          windowListener()
+          blurListener()
         }
       }
     }, [close, getDocument, getTriggerDOMNode, isAction, popupVisible])
@@ -434,11 +431,11 @@ const Trigger = forwardRef<HTMLElement, TriggerProps>(
           >
             {isFunction(popup) ? popup() : popup}
           </Popup>,
-          document.body,
+          getContainer(),
         )
       }
       return null
-    }, [popup, popupVisible, popupPlacement, getTriggerDOMNode])
+    }, [popup, popupVisible, popupPlacement, getTriggerDOMNode, getContainer])
 
     return (
       <>
@@ -448,10 +445,4 @@ const Trigger = forwardRef<HTMLElement, TriggerProps>(
     )
   },
 )
-
-Trigger.defaultProps = {
-  popupPlacement: "top",
-  defaultPopupVisible: false,
-}
-
 export default Trigger

@@ -25,6 +25,8 @@ const Popup = forwardRef<HTMLDivElement, PopupProps>(
 
     const motionRef = useRef<HTMLDivElement>(null as any)
 
+    const popupRef = useRef<HTMLDivElement>(null as any)
+
     const calcPosition = useMemoizedFn(() => {
       if (triggerRef.current && motionRef.current) {
         const {
@@ -34,58 +36,68 @@ const Popup = forwardRef<HTMLDivElement, PopupProps>(
           left: triggerLeft,
         } = triggerRef.current.getBoundingClientRect()
 
-        const { width: popupWidth, height: popupHeight } =
+        const { width: motionWidth, height: motionHeight } =
           motionRef.current.getBoundingClientRect()
+
+        const { top: popupTop, left: popupLeft } =
+          popupRef.current.getBoundingClientRect()
 
         const newPosition = {
           left: 0,
           top: 0,
         }
 
+        const top = () => ceil(triggerTop - motionHeight - popupTop)
+        const bottom = () => ceil(triggerTop + triggerHeight - popupTop)
+        const left = () =>
+          ceil(triggerLeft + (triggerWidth - motionWidth) / 2 - popupLeft)
+        const right = () =>
+          ceil(triggerLeft + triggerWidth - motionWidth - popupLeft)
+
         switch (placement) {
           case "top":
-            newPosition.top = ceil(triggerTop - popupHeight)
-            newPosition.left = triggerLeft + (triggerWidth - popupWidth) / 2
+            newPosition.top = top()
+            newPosition.left = left()
             break
 
           case "topLeft":
-            newPosition.top = ceil(triggerTop - popupHeight)
+            newPosition.top = top()
             newPosition.left = triggerLeft
             break
 
           case "topRight":
-            newPosition.top = ceil(triggerTop - popupHeight)
-            newPosition.left = triggerLeft - (popupWidth - triggerWidth)
+            newPosition.top = top()
+            newPosition.left = right()
             break
 
           case "bottom":
-            newPosition.top = ceil(triggerTop + triggerHeight)
-            newPosition.left = triggerLeft + (triggerWidth - popupWidth) / 2
+            newPosition.top = bottom()
+            newPosition.left = left()
             break
 
           case "bottomLeft":
-            newPosition.top = ceil(triggerTop + triggerHeight)
+            newPosition.top = bottom()
             newPosition.left = triggerLeft
             break
 
           case "bottomRight":
-            newPosition.top = ceil(triggerTop + triggerHeight)
-            newPosition.left = triggerLeft - (popupWidth - triggerWidth)
+            newPosition.top = bottom()
+            newPosition.left = right()
             break
 
           default:
             throw new Error(`not support placement ${placement}`)
         }
 
-        const overflow =
-          popupWidth + newPosition.left - document.body.clientWidth
-        if (overflow > 0) {
-          newPosition.left -= overflow
-        }
+        // const overflow =
+        //   motionWidth + newPosition.left - document.body.clientWidth
+        // if (overflow > 0) {
+        //   newPosition.left -= overflow
+        // }
 
-        if (newPosition.left < 0) {
-          newPosition.left = 0
-        }
+        // if (newPosition.left < 0) {
+        //   newPosition.left = 0
+        // }
 
         if (isEqual(prevPosition.current, newPosition)) {
           return prevPosition.current
@@ -122,7 +134,7 @@ const Popup = forwardRef<HTMLDivElement, PopupProps>(
     })
 
     return (
-      <div className={styles.popup} key="popup">
+      <div ref={popupRef} className={styles.popup} key="popup">
         <Motion
           className={styles.popupWrapper}
           ref={motionRef}

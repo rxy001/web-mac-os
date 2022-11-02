@@ -26,31 +26,35 @@ const Icon = forwardRef<HTMLSpanElement, IconProps>(
     ref,
   ) => {
     const [maskVisible, setMaskVisible] = useState(false)
-    const [isPress, setIsPress] = useState(false)
+    const [isPressed, setIsPressed] = useState(false)
+
+    const hideMask = useMemoizedFn(() => {
+      if (mask) {
+        setIsPressed(false)
+        setMaskVisible(false)
+      }
+    })
 
     const onMouseDown = useMemoizedFn((e) => {
       if (mask) {
-        setIsPress(true)
+        setIsPressed(true)
         setMaskVisible(true)
       }
       propsOnMouseDown?.(e)
     })
 
     const onMouseUp = useMemoizedFn((e) => {
-      if (mask) {
-        setIsPress(false)
-        setMaskVisible(false)
-      }
+      hideMask()
       propsOnMouseUp?.(e)
     })
 
     const onMouseEnter = useMemoizedFn((e) => {
-      mask && isPress && setMaskVisible(true)
+      mask && isPressed && setMaskVisible(true)
       propsOnMouseEnter?.(e)
     })
 
     const onMouseLeave = useMemoizedFn((e) => {
-      mask && isPress && setMaskVisible(false)
+      mask && isPressed && setMaskVisible(false)
       propsOnMouseLeave?.(e)
     })
 
@@ -94,10 +98,10 @@ const Icon = forwardRef<HTMLSpanElement, IconProps>(
 
     useEffect(() => {
       if (mask) {
-        document.addEventListener("mouseup", onMouseUp)
-        return () => document.removeEventListener("mouseup", onMouseUp)
+        document.addEventListener("mouseup", hideMask)
+        return () => document.removeEventListener("mouseup", hideMask)
       }
-    }, [onMouseUp, mask])
+    }, [hideMask, mask])
 
     return (
       <span

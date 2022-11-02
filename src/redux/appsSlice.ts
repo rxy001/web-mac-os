@@ -1,9 +1,10 @@
 import { createSlice } from "@reduxjs/toolkit"
 import type { PayloadAction } from "@reduxjs/toolkit"
-import { findIndex, some } from "lodash"
+import { findIndex } from "lodash"
 import type { RootState } from "./index"
 
 type App = {
+  id: string
   appName: string
   renderDockShortcut: () => JSX.Element
 }
@@ -22,8 +23,12 @@ const appsSlice = createSlice({
   reducers: {
     pushApp: (state, action: PayloadAction<App>) => {
       const app = action.payload
-      if (!some(state.inDock, (v) => v.appName === app.appName)) {
+      const index = findIndex(state.inDock, ["appName", app.appName])
+      if (index === -1) {
         state.inDock = [...state.inDock, app]
+      } else {
+        const temp = [...state.inDock]
+        state.inDock = temp.splice(index, 1, app)
       }
     },
     removeApp: (state, action: PayloadAction<string>) => {

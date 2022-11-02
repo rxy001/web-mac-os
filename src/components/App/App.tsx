@@ -1,4 +1,5 @@
 import classNames from "classnames"
+import shortid from "shortid"
 import { memo, useEffect, useMemo, useRef, useState } from "react"
 import { connect } from "react-redux"
 import {
@@ -38,7 +39,6 @@ const windowEventTypes: WindowHandlerEventType[] = [
 
 const storagePrefix = "__App__"
 
-// todo：点击桌面图标打开app 后 ，dockShortcut 下面不显示原点
 function App({
   element,
   title,
@@ -54,6 +54,8 @@ function App({
   const dispatch = useAppDispatch()
 
   const storageKey = `${storagePrefix}${title}`
+
+  const appId = useMemo(() => `_${shortid()}`, [])
 
   const storage = useLocalStorage()
 
@@ -129,9 +131,8 @@ function App({
 
   const removeInDock = useMemoizedFn(() => {
     if (isKeepInDock) {
-      const key = `${storagePrefix}${title}`
       const prev = storage.getItem(storageKey) ?? {}
-      storage.setItem(key, {
+      storage.setItem(storageKey, {
         ...prev,
         keepInDock: false,
       })
@@ -150,6 +151,7 @@ function App({
 
   const renderDockShortcut = useMemoizedFn(() => (
     <DockShortcut
+      id={appId}
       icon={icon}
       title={title}
       defaultIsKeepInDock={isKeepInDock}
@@ -166,6 +168,7 @@ function App({
   const pushToRedux = useMemoizedFn(() => {
     dispatch(
       pushApp({
+        id: appId,
         appName: title,
         renderDockShortcut,
       }),
@@ -241,6 +244,7 @@ function App({
   }, [onAppClosed, onAppOpened, open])
 
   useUnmount(() => {
+    removeAppFromRedux()
     listeners.current.forEach(({ event, listener }) => {
       eventEmitter.off(event, listener)
     })
