@@ -29,8 +29,6 @@ import { WINDOW_HEADER_HEIGHT, MINIMIZE_DURATION } from "./constants"
 import { WindowContext } from "./context"
 import Thumbnail from "./Thumbnail"
 
-let Z_INDEX = 0
-
 const container = document.body
 
 const transformRndStyle = (rndStyle: RndStyle) => ({
@@ -104,7 +102,10 @@ function Window(
     },
   })
 
-  const zIndex = useMemo(() => windowZIndex.set(title, (Z_INDEX += 1)), [title])
+  const zIndex = useMemo(
+    () => windowZIndex.set(title, windowZIndex.maxZIndex() + 1),
+    [title],
+  )
 
   const [style, setStyle] = useState({
     zIndex,
@@ -128,7 +129,7 @@ function Window(
     if (windowZIndex.get(title) < maxZIndex) {
       setStyle((prev) => ({
         ...prev,
-        zIndex: windowZIndex.set(title, (Z_INDEX += 1)),
+        zIndex: windowZIndex.set(title, maxZIndex + 1),
       }))
     }
   })

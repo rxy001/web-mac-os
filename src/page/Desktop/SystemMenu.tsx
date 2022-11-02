@@ -24,6 +24,7 @@ function SystemMenu() {
     setVisible(false)
   })
 
+  // todo: 通过 eventEmiiter 修改实现方式
   return (
     <>
       <Dropdown menu={menu} placement="bottomLeft" arrow={false} distance={2}>
