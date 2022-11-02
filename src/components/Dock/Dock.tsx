@@ -119,9 +119,7 @@ function Dock() {
   })
 
   Window.useAppSubscribe(Window.EmitEventType.WINDOW_FULLSCREEN, (appName) => {
-    if (!fullscreenApps.current.size) {
-      hideDock()
-    }
+    hideDock()
     fullscreenApps.current.add(appName)
   })
 
@@ -129,9 +127,7 @@ function Dock() {
     Window.EmitEventType.WINDOW_EXIT_FULLSCREEN,
     (appName) => {
       fullscreenApps.current.delete(appName)
-      if (!fullscreenApps.current.size) {
-        showDock()
-      }
+      showDock()
     },
   )
 

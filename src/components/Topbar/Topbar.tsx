@@ -48,19 +48,15 @@ function Topbar({ left, right }: TopbarProps) {
   const fullscreenApps = useRef(new Set<string>())
 
   Window.useAppSubscribe(Window.EmitEventType.WINDOW_FULLSCREEN, (appName) => {
-    if (!fullscreenApps.current.size) {
-      hideTopbar()
-    }
+    hideTopbar()
     fullscreenApps.current.add(appName)
   })
 
   Window.useAppSubscribe(
     Window.EmitEventType.WINDOW_EXIT_FULLSCREEN,
     (appName) => {
+      showTopbar()
       fullscreenApps.current.delete(appName)
-      if (!fullscreenApps.current.size) {
-        showTopbar()
-      }
     },
   )
 
