@@ -17,6 +17,7 @@ function Thumbnail({ title, minimize, expand, containerRef }: ThumbnailProps) {
   useMount(() => {
     html2canvas(containerRef.current, {
       imageTimeout: 0,
+      scale: 2,
       canvas: thumbnailRef.current,
     }).then(() => {
       minimize(thumbnailRef.current)
