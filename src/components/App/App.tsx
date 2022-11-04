@@ -1,7 +1,6 @@
 import classNames from "classnames"
 import shortid from "shortid"
 import { memo, useEffect, useMemo, useRef, useState } from "react"
-import { connect } from "react-redux"
 import {
   useAppDispatch,
   useMemoizedFn,
@@ -275,4 +274,4 @@ function App({
   )
 }
 
-export default memo(connect()(App))
+export default memo(App)

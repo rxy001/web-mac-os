@@ -9,8 +9,8 @@ function Input({
   suffix,
   prefix,
   style,
-  defaultValue,
   className,
+  defaultValue = "",
   onChange: oc,
   value: propsValue,
   ...props
@@ -52,7 +52,3 @@ function Input({
 }
 
 export default memo(Input)
-
-Input.defaultProps = {
-  defaultValue: "",
-}
