@@ -11,6 +11,7 @@ import {
 } from "@constants"
 import { createPortal } from "react-dom"
 import { selectApps } from "@slice/appsSlice"
+import { useToggleVisible } from "../helper"
 import { Window, Tooltip } from "../index"
 import styles from "./css/dock.less"
 
@@ -116,8 +117,6 @@ function Dock() {
     },
   })
 
-  const fullscreenApps = useRef(new Set<string>())
-
   const hideDock = useMemoizedFn(() => {
     if (visible.current) {
       visible.current = false
@@ -143,37 +142,7 @@ function Dock() {
       })
     }
   })
-
-  Window.useAppSubscribe(Window.EmitEventType.WINDOW_FULLSCREEN, (appName) => {
-    hideDock()
-    fullscreenApps.current.add(appName)
-  })
-
-  Window.useAppSubscribe(
-    Window.EmitEventType.WINDOW_EXIT_FULLSCREEN,
-    (appName) => {
-      fullscreenApps.current.delete(appName)
-      showDock()
-    },
-  )
-
-  Window.useAppSubscribe(Window.EmitEventType.WINDOW_MINIMIZE, (appName) => {
-    if (fullscreenApps.current.has(appName)) {
-      showDock()
-    }
-  })
-
-  Window.useAppSubscribe(Window.EmitEventType.WINDOW_EXPAND, (appName) => {
-    if (fullscreenApps.current.has(appName)) {
-      hideDock()
-    }
-  })
-
-  Window.useAppSubscribe(Window.EmitEventType.WINDOW_HIDDEN, (appName) => {
-    if (fullscreenApps.current.delete(appName)) {
-      showDock()
-    }
-  })
+  useToggleVisible({ hide: hideDock, show: showDock })
 
   Window.useAppSubscribe(
     Window.EmitEventType.WINDOW_RENDER_THUMBNAIL,

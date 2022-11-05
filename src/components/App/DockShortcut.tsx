@@ -1,6 +1,6 @@
 import { useMemoizedFn, useDebounceFn, useUnmount } from "@chooks"
 import classNames from "classnames"
-import { useMemo, useState, useReducer, useRef } from "react"
+import { useMemo, useState, useReducer, useRef, memo } from "react"
 import { Icon, Tooltip, Popover, Button, App } from "../index"
 import styles from "./css/dockShortcut.less"
 import type { DockShortcutProps } from "./interface"
@@ -204,4 +204,4 @@ function DockShortcut({
   )
 }
 
-export default DockShortcut
+export default memo(DockShortcut)

@@ -9,7 +9,6 @@ import {
 } from "@chooks"
 import { reduce } from "lodash"
 import { useEventEmitter } from "@eventEmitter"
-import type { Listener } from "@eventEmitter"
 import { DockShortcut } from "../Dock"
 import DesktopShortcut from "./DesktopShortcut"
 import { pushApp, removeApp } from "../../redux/appsSlice"
@@ -19,6 +18,7 @@ import { AppEmitEventType } from "./interface"
 import { Window } from "../index"
 import type { WindowRef, WindowHandlerEventType } from "../index"
 import styles from "./css/app.less"
+import { useEventSubscribe } from "../helper"
 
 const windowEventTypes: WindowHandlerEventType[] = [
   "fullscreen",
@@ -63,8 +63,6 @@ function App({
     const local = storage.getItem(storageKey) ?? {}
     return local.keepInDock ?? true
   })
-
-  const listeners = useRef(new Map())
 
   const windowRef = useRef<WindowRef>(null as any)
 
@@ -199,23 +197,7 @@ function App({
     eventEmitter.emit(AppEmitEventType.APP_REMOVE_IN_DOCK, title)
   })
 
-  const subscribe = useMemoizedFn(
-    (event: AppEmitEventType, listener: Listener) => {
-      function l(t: string) {
-        if (t === title) listener()
-      }
-      listeners.current.set(listener, { event, listener: l })
-      eventEmitter.on(event, l)
-    },
-  )
-
-  const unSubscribe = useMemoizedFn(
-    (event: AppEmitEventType, listener: Listener) => {
-      const { listener: l } = listeners.current.get(listener)
-      listeners.current.delete(l)
-      eventEmitter.off(event, l)
-    },
-  )
+  const [subscribe, unSubscribe] = useEventSubscribe<AppEmitEventType>(title)
 
   const app = useMemo<AppContextProps>(
     () => ({
@@ -242,9 +224,6 @@ function App({
 
   useUnmount(() => {
     removeAppFromRedux()
-    listeners.current.forEach(({ event, listener }) => {
-      eventEmitter.off(event, listener)
-    })
   })
 
   return (

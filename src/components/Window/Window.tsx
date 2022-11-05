@@ -12,7 +12,6 @@ import {
 import { max } from "lodash"
 import { asyncLoadComponent } from "@utils"
 import { useEventEmitter } from "@eventEmitter"
-import type { Listener } from "@eventEmitter"
 import { useRnd, useMemoizedFn, useResizeObserver, useUnmount } from "@chooks"
 import type { RndStyle } from "@chooks"
 import { createPortal } from "react-dom"
@@ -28,6 +27,7 @@ import type { PreState } from "./BeforeState"
 import { WINDOW_HEADER_HEIGHT, MINIMIZE_DURATION } from "./constants"
 import { WindowContext } from "./context"
 import Thumbnail from "./Thumbnail"
+import { useEventSubscribe } from "../helper"
 
 const container = document.body
 
@@ -64,8 +64,6 @@ function Window(
   const [isMinimized, setIsMinimized] = useState(false)
 
   const [isMaximized, setIsMaximized] = useState(false)
-
-  const listeners = useRef(new Map())
 
   const [rndStyle, dragBind, resizeBind, rndApi] = useRnd({
     defaultSize,
@@ -315,30 +313,14 @@ function Window(
   const getIsMaximized = useMemoizedFn(() => isMaximized)
   const getVisible = useMemoizedFn(() => windowVisible)
 
-  const subscribe = useMemoizedFn(
-    (event: WindowEmitEventType, listener: Listener) => {
-      function l(t: string) {
-        if (t === title) listener()
-      }
-      listeners.current.set(listener, { event, listener: l })
-      eventEmitter.on(event, l)
-    },
-  )
-
-  const unSubscribe = useMemoizedFn(
-    (event: WindowEmitEventType, listener: Listener) => {
-      const { listener: l } = listeners.current.get(listener)
-      listeners.current.delete(l)
-      eventEmitter.off(event, l)
-    },
-  )
-
   const children = useMemo(() => {
     if (typeof element === "function") {
       return asyncLoadComponent(element)
     }
     throw new Error(`${element} is not a function`)
   }, [element])
+
+  const [subscribe, unSubscribe] = useEventSubscribe<WindowEmitEventType>(title)
 
   const windowRef = useRef<WindowRef>({
     minimize,

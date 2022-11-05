@@ -3,10 +3,10 @@ import { createPortal } from "react-dom"
 import { TOPBAR_HEIGHT, FULLSCREEN_DURATION } from "@constants"
 import { useSpring, animated } from "@react-spring/web"
 import { useMemoizedFn } from "@chooks"
-import { Window } from "../index"
 import type { TopbarProps } from "./interface"
 import { Clock, Bluetooth, Wifi, Volume, ActionCenter } from "./widgets"
 import styles from "./css/topbar.less"
+import { useToggleVisible } from "../helper"
 
 function Topbar({ left, right }: TopbarProps) {
   const visible = useRef(true)
@@ -45,37 +45,9 @@ function Topbar({ left, right }: TopbarProps) {
     }
   })
 
-  const fullscreenApps = useRef(new Set<string>())
-
-  Window.useAppSubscribe(Window.EmitEventType.WINDOW_FULLSCREEN, (appName) => {
-    hideTopbar()
-    fullscreenApps.current.add(appName)
-  })
-
-  Window.useAppSubscribe(
-    Window.EmitEventType.WINDOW_EXIT_FULLSCREEN,
-    (appName) => {
-      showTopbar()
-      fullscreenApps.current.delete(appName)
-    },
-  )
-
-  Window.useAppSubscribe(Window.EmitEventType.WINDOW_MINIMIZE, (appName) => {
-    if (fullscreenApps.current.has(appName)) {
-      showTopbar()
-    }
-  })
-
-  Window.useAppSubscribe(Window.EmitEventType.WINDOW_EXPAND, (appName) => {
-    if (fullscreenApps.current.has(appName)) {
-      hideTopbar()
-    }
-  })
-
-  Window.useAppSubscribe(Window.EmitEventType.WINDOW_HIDDEN, (appName) => {
-    if (fullscreenApps.current.delete(appName)) {
-      showTopbar()
-    }
+  useToggleVisible({
+    hide: hideTopbar,
+    show: showTopbar,
   })
 
   return createPortal(
