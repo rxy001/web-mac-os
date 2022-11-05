@@ -4,7 +4,6 @@ import { findIndex } from "lodash"
 import type { RootState } from "./index"
 
 type App = {
-  id: string
   appName: string
   renderDockShortcut: () => JSX.Element
 }

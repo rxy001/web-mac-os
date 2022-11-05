@@ -14,43 +14,9 @@ import { selectApps } from "@slice/appsSlice"
 import { Window, Tooltip } from "../index"
 import styles from "./css/dock.less"
 
-const THUMBNAIL_WIDTH = 60
-
-const iconWrapperStyle = {
-  padding: ICON_WRAPPER_PADDING,
-  height: ICON_WRAPPER_SIZE,
-  width: ICON_WRAPPER_SIZE,
-  marginBottom: 5,
+const config = {
+  duration: 200,
 }
-
-const thumbnailStyle = {
-  padding: ICON_WRAPPER_PADDING,
-  height: 40,
-  width: THUMBNAIL_WIDTH,
-  marginBottom: 5,
-}
-
-const dividerStyle = {
-  height: ICON_WRAPPER_SIZE,
-  margin: `0 ${ICON_WRAPPER_PADDING}px`,
-}
-
-const springConfig = (width: number) => ({
-  key: (item: any) => item.appName,
-  from: {
-    width: 0,
-    opacity: 0,
-    overflow: "hidden",
-  },
-  enter: { width, opacity: 1 },
-  leave: {
-    width: 0,
-    opacity: 0,
-  },
-  config: {
-    duration: 150,
-  },
-})
 
 function Dock() {
   const prevAppCount = useRef(0)
@@ -80,15 +46,75 @@ function Dock() {
     { appName: string; renderThumbnail: () => ReactElement }[]
   >([])
 
-  const minimizedTransitions = useTransition(
-    minimizedApps,
-    springConfig(THUMBNAIL_WIDTH),
+  const keepInDockTransition = useTransition(appsInDock, {
+    config,
+    key: (item: any) => item.appName,
+    from: {
+      width: 0,
+      opacity: 0,
+      padding: 0,
+      marginBottom: 2,
+    },
+    enter: {
+      opacity: 1,
+      width: ICON_WRAPPER_SIZE,
+      padding: ICON_WRAPPER_PADDING,
+    },
+    leave: {
+      width: 0,
+      opacity: 0,
+      padding: 0,
+    },
+  })
+
+  const minimizedTransition = useTransition(minimizedApps, {
+    key: (item: any) => item.appName,
+    from: {
+      width: 0,
+      opacity: 0,
+      height: 30,
+      margin: ICON_WRAPPER_PADDING,
+    },
+    enter: [
+      {
+        width: ICON_WRAPPER_SIZE,
+      },
+
+      { opacity: 1 },
+    ],
+    leave: [
+      {
+        opacity: 0,
+      },
+      { width: 0 },
+    ],
+    config: {
+      duration: 150,
+    },
+  })
+
+  const isShowDivider = useMemo(
+    () => !!(size(minimizedApps) && size(appsInDock)),
+    [appsInDock, minimizedApps],
   )
 
-  const keepInDockTransitions = useTransition(
-    appsInDock,
-    springConfig(ICON_WRAPPER_SIZE),
-  )
+  const dividerStyle = useSpring({
+    from: {
+      height: 40,
+    },
+    to: isShowDivider
+      ? {
+          borderWidth: 1,
+          margin: 5,
+        }
+      : {
+          borderWidth: 0,
+          margin: 0,
+        },
+    config: {
+      duration: 150,
+    },
+  })
 
   const fullscreenApps = useRef(new Set<string>())
 
@@ -173,25 +199,21 @@ function Dock() {
   useEffect(() => {
     const appCount = size(appsInDock)
 
-    const config = {
-      duration: 200,
-    }
-
     if (
       (prevAppCount.current > 0 && appCount === 0) ||
       (prevAppCount.current === 0 && appCount > 0)
     ) {
       if (appCount > 0) {
         api.start({
+          config,
           paddingLeft: ICON_WRAPPER_PADDING,
           paddingRight: ICON_WRAPPER_PADDING,
-          config,
         })
       } else if (!appCount) {
         api.start({
+          config,
           paddingLeft: 0,
           paddingRight: 0,
-          config,
         })
       }
     }
@@ -202,27 +224,12 @@ function Dock() {
   return createPortal(
     <animated.div key="dock" style={mergedStyle} className={styles.dockWrapper}>
       <Tooltip.Group>
-        {keepInDockTransitions((style, item) => (
-          // iconWrapperStyle 的宽高是固定了， animated.div 宽度在变化时要隐藏掉 iconWrapper 溢出的宽度，
-          // 所以 animated.div 使用了 overflow:hidden， 但也因此导致 DockShortcut 的 popover 被隐藏掉。
-          // 这里的 id 就是为了 DockShortcut 获取到 popupContainer，方式相比传递ref简单但不可靠。
-          // 另外宽度变化的动画无法在 DockShortcut 实现，动画还未执行 DockShortcut 就被卸载掉了。
-          // todo: 使用其他方法替换 id
-          <div className={styles.position} id={item.id}>
-            <animated.div style={style}>
-              <div style={iconWrapperStyle}>{item.renderDockShortcut()}</div>
-            </animated.div>
-          </div>
+        {keepInDockTransition((style, item) => (
+          <animated.div style={style}>{item.renderDockShortcut()}</animated.div>
         ))}
-        {!!(size(minimizedApps) && size(appsInDock)) && (
-          <div style={dividerStyle} className={styles.divider} />
-        )}
-        {minimizedTransitions((style, item) => (
-          <div className={styles.position}>
-            <animated.div style={style}>
-              <div style={thumbnailStyle}>{item.renderThumbnail()}</div>
-            </animated.div>
-          </div>
+        <animated.div style={dividerStyle} className={styles.divider} />
+        {minimizedTransition((style, item) => (
+          <animated.div style={style}>{item.renderThumbnail()}</animated.div>
         ))}
       </Tooltip.Group>
     </animated.div>,

@@ -35,7 +35,6 @@ export enum AppEmitEventType {
 }
 
 export interface DockShortcutProps {
-  id: string
   title: string
   openApp: () => void
   icon: IconProps["icon"]

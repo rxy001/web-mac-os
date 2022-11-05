@@ -1,5 +1,4 @@
 import classNames from "classnames"
-import shortid from "shortid"
 import { memo, useEffect, useMemo, useRef, useState } from "react"
 import {
   useAppDispatch,
@@ -53,8 +52,6 @@ function App({
   const dispatch = useAppDispatch()
 
   const storageKey = `${storagePrefix}${title}`
-
-  const appId = useMemo(() => `_${shortid()}`, [])
 
   const storage = useLocalStorage()
 
@@ -150,7 +147,6 @@ function App({
 
   const renderDockShortcut = useMemoizedFn(() => (
     <DockShortcut
-      id={appId}
       icon={icon}
       title={title}
       defaultIsKeepInDock={isKeepInDock}
@@ -167,7 +163,6 @@ function App({
   const pushToRedux = useMemoizedFn(() => {
     dispatch(
       pushApp({
-        id: appId,
         appName: title,
         renderDockShortcut,
       }),
@@ -175,7 +170,10 @@ function App({
   })
 
   const removeAppFromRedux = useMemoizedFn(() => {
-    dispatch(removeApp(title))
+    // 为了先隐藏 popup
+    setTimeout(() => {
+      dispatch(removeApp(title))
+    }, 200)
   })
 
   const onAppOpened = useMemoizedFn(() => {
