@@ -4,6 +4,7 @@ module.exports = function css() {
   return `.${PREFIX}-tree{
     width: 270px;
     overflow: auto;
+
   }
   
   .${PREFIX}-wrapper {
@@ -11,6 +12,7 @@ module.exports = function css() {
     width: 100%; 
     height: 100%;
     line-height: 1.8em;
+    padding-left: 5px;
   }
   
   .${PREFIX}-content {

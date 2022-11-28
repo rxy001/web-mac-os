@@ -5,7 +5,7 @@ import { Icon, Tooltip, Popover, Button, App } from "../index"
 import styles from "./css/dockShortcut.less"
 import type { DockShortcutProps } from "./interface"
 
-const DISTANCE = 20
+const DISTANCE = 15
 
 function DockShortcut({
   icon,

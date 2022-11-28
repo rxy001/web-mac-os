@@ -25,7 +25,7 @@ function Thumbnail({ title, minimize, expand, containerRef }: ThumbnailProps) {
   })
 
   return (
-    <Tooltip text={title} distance={25} trigger={["hover", "click"]}>
+    <Tooltip text={title} distance={21} trigger={["hover", "click"]}>
       <canvas
         key="canvas"
         width={rect.current.width * 2}

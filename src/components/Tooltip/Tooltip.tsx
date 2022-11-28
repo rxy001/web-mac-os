@@ -5,6 +5,9 @@ import type { TooltipProps } from "./interface"
 import styles from "./css/tooltip.less"
 import Trigger from "../Trigger"
 
+// 此值为 arrowSize 的 1/2
+const BASE_DIST = 6
+
 const Tooltip = forwardRef<HTMLDivElement, TooltipProps>(
   (
     {
@@ -15,7 +18,7 @@ const Tooltip = forwardRef<HTMLDivElement, TooltipProps>(
       placement = "top",
       arrow = true,
       trigger = "hover",
-      distance = 6,
+      distance = 0,
       ...props
     },
     ref,
@@ -26,11 +29,11 @@ const Tooltip = forwardRef<HTMLDivElement, TooltipProps>(
         case "bottomLeft":
         case "bottomRight":
           return {
-            paddingTop: distance,
+            paddingTop: BASE_DIST + distance,
           }
         default:
           return {
-            paddingBottom: distance,
+            paddingBottom: BASE_DIST + distance,
           }
       }
     }, [distance, placement])
