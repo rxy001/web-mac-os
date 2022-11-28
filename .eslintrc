@@ -60,7 +60,8 @@
     "jsx-a11y/no-static-element-interactions": 0,
     "jsx-a11y/anchor-has-content": 0,
     "jsx-a11y/click-events-have-key-events": 0,
-    "jsx-a11y/mouse-events-have-key-events": 0
+    "jsx-a11y/mouse-events-have-key-events": 0,
+    "class-methods-use-this": 0
   },
   // 要禁用一组文件的配置文件中的规则，请使用 overrides 和 file
   "overrides": [

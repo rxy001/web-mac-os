@@ -406,7 +406,12 @@ function Window(
             maximize={maximize}
             fullscreen={fullscreen}
           />
-          <div ref={containerRef} className={styles.content}>
+          <div
+            ref={containerRef}
+            className={classNames(styles.content, {
+              [styles.padding]: isFullscreen,
+            })}
+          >
             {children}
           </div>
         </animated.div>
