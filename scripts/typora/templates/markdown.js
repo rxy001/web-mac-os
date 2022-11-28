@@ -1,14 +1,19 @@
 // md 语法中的 ` 与 js 模板字符串 `` 冲突，所以替换掉
+// 禁用 eslint 如果添加到 .eslintignore ， 在 commit 时 lint-stage 会警告，导致提交失败
+// lint-stage 可忽略文件，但麻烦
+
 const { PREFIX } = require("../constants")
 
 function markdown(md) {
   return `
+  // @ts-nocheck
+  /* eslint-disable */
+
   import ReactMarkdown from 'react-markdown'
   import rehypeHighlight from 'rehype-highlight'
   import remarkGfm from 'remark-gfm'
   import "highlight.js/styles/atom-one-dark.css"
 
-  /* eslint-disable */
   const components = {
     img: ({node, ...props}) => (<img className="${PREFIX}-img" {...props} />),
     td: ({node, isHeader, ...props}) => (<td {...props} className="${PREFIX}-td" />),

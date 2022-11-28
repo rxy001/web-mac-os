@@ -1,5 +1,10 @@
+// 禁用 eslint 如果添加到 .eslintignore ， 在 commit 时 lint-stage 会警告，导致提交失败
+// lint-stage 可忽略文件，但麻烦
+
 module.exports = function typora({ defaultExpandedKeys, treeData }) {
   return `
+  // @ts-nocheck
+  /* eslint-disable */
   import Tree from "rc-tree";
   import "rc-tree/assets/index.css";
   import React, { Suspense, useState, useCallback } from 'react';

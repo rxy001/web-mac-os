@@ -6,18 +6,20 @@ const paths = require("./paths")
 const manifest = require("./manifest")
 const mkEntryFile = require("./mkEntryFile")
 const utils = require("./utils")
+const cssTemplate = require("./templates/css")
+const fileIcon = require("./icon/file")
+const dirIcon = require("./icon/dir")
+const switcherClose = require("./icon/switcherClose")
+const switcherOpen = require("./icon/switcherOpen")
+
+const mkMdDirImpl = mkMdDir()
+
+main()
 
 function cloneNotesRepo() {
   // eslint-disable-next-line no-console
   console.clear()
-  try {
-    fs.rmdirSync(paths.notesPath, {
-      force: true,
-      recursive: true,
-    })
-    // eslint-disable-next-line no-empty
-  } catch (error) {}
-
+  removeNotesRepo()
   execSync("git clone https://github.com/rxy001/notes.git", {
     stdio: [0, 1, 2],
     cwd: paths.appDir,
@@ -51,15 +53,13 @@ function mkMdDir() {
   }
 }
 
-const mkMdDirImpl = mkMdDir()
-
 function mkMdFile(dirent, direntPath) {
   const file = fs.readFileSync(direntPath, {
     encoding: "utf8",
   })
   const contentHash = utils.hash(file)
   const componentName = `MD_${contentHash.slice(0, 8)}`
-  const componentPath = path.resolve(paths.mdPath, `${componentName}.jsx`)
+  const componentPath = path.resolve(paths.mdPath, `${componentName}.tsx`)
 
   fs.writeFileSync(componentPath, componentTemplate(file))
   manifest.push({
@@ -89,7 +89,18 @@ function recursivelyTraverseNotes(dirPath) {
   })
 }
 
-cloneNotesRepo()
-recursivelyTraverseNotes(paths.notesPath)
-mkEntryFile()
-removeNotesRepo()
+function mkAdditionalFiles() {
+  fs.writeFileSync(paths.cssPath, cssTemplate())
+  fs.writeFileSync(paths.fileIconPath, fileIcon())
+  fs.writeFileSync(paths.dirIconPath, dirIcon())
+  fs.writeFileSync(paths.switcherCloseIconPath, switcherClose())
+  fs.writeFileSync(paths.switcherOpenIconPath, switcherOpen())
+}
+
+function main() {
+  cloneNotesRepo()
+  recursivelyTraverseNotes(paths.notesPath)
+  mkEntryFile()
+  mkAdditionalFiles()
+  removeNotesRepo()
+}

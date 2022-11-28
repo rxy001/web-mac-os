@@ -10,13 +10,13 @@ const mdPath = path.resolve(appDir, "src/apps/Typora/Markdown")
 
 const cssPath = path.resolve(mdPath, "typora.css")
 
-const fileIconPath = path.resolve(mdPath, "FileIcon.jsx")
+const fileIconPath = path.resolve(mdPath, "FileIcon.tsx")
 
-const dirIconPath = path.resolve(mdPath, "DirIcon.jsx")
+const dirIconPath = path.resolve(mdPath, "DirIcon.tsx")
 
-const switcherOpenIconPath = path.resolve(mdPath, "SwitcherOpen.jsx")
+const switcherOpenIconPath = path.resolve(mdPath, "SwitcherOpen.tsx")
 
-const switcherCloseIconPath = path.resolve(mdPath, "SwitcherClose.jsx")
+const switcherCloseIconPath = path.resolve(mdPath, "SwitcherClose.tsx")
 
 module.exports = {
   appDir,

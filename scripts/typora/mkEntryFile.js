@@ -3,11 +3,6 @@ const path = require("path")
 const paths = require("./paths")
 const manifest = require("./manifest")
 const entry = require("./templates/entry")
-const cssTemplate = require("./templates/css")
-const fileIcon = require("./icon/file")
-const dirIcon = require("./icon/dir")
-const switcherClose = require("./icon/switcherClose")
-const switcherOpen = require("./icon/switcherOpen")
 
 function manifestToTreeData() {
   const treeData = []
@@ -54,16 +49,10 @@ function manifestToTreeData() {
 module.exports = function mkEntryFile() {
   const treeData = manifestToTreeData()
   fs.writeFileSync(
-    path.resolve(paths.mdPath, "index.jsx"),
+    path.resolve(paths.mdPath, "index.tsx"),
     entry({
       defaultExpandedKeys: `['${treeData[0].title}']`,
       treeData: JSON.stringify(treeData),
     }),
   )
-
-  fs.writeFileSync(paths.cssPath, cssTemplate())
-  fs.writeFileSync(paths.fileIconPath, fileIcon())
-  fs.writeFileSync(paths.dirIconPath, dirIcon())
-  fs.writeFileSync(paths.switcherCloseIconPath, switcherClose())
-  fs.writeFileSync(paths.switcherOpenIconPath, switcherOpen())
 }
