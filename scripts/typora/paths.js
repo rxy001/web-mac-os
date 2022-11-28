@@ -6,7 +6,7 @@ const appDir = fs.realpathSync(process.cwd())
 
 const notesPath = path.resolve(appDir, "notes")
 
-const mdPath = path.resolve(appDir, "src/apps/Typora/markdown")
+const mdPath = path.resolve(appDir, "src/apps/Typora/Markdown")
 
 const cssPath = path.resolve(mdPath, "typora.css")
 

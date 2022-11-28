@@ -2,7 +2,7 @@ import { App } from "@brc"
 import { memo } from "react"
 import typoraImg from "@assets/typora.png"
 
-const importTypora = () => import("./markdown")
+const importMarkdown = () => import("./Markdown")
 
 const defaultSize = {
   width: 800,
@@ -15,7 +15,7 @@ function Application() {
       defaultSize={defaultSize}
       icon={typoraImg}
       title="Typora"
-      element={importTypora}
+      element={importMarkdown}
     />
   )
 }
