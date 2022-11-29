@@ -9,8 +9,11 @@ const {
   addWebpackResolve,
   addWebpackPlugin,
   setWebpackOptimizationSplitChunks,
+  setWebpackStats,
+  fixBabelImports,
 } = require("customize-cra")
 const PreloadWebpackPlugin = require("@vue/preload-webpack-plugin")
+const { BundleAnalyzerPlugin } = require("webpack-bundle-analyzer")
 
 const appDirectory = fs.realpathSync(process.cwd())
 const resolveApp = (relativePath) => path.resolve(appDirectory, relativePath)
@@ -68,6 +71,18 @@ module.exports = {
         name: false,
       },
     ),
+    setWebpackStats({
+      timings: true,
+      assets: false,
+      modules: false,
+      chunks: false,
+    }),
+    fixBabelImports("lodash", {
+      libraryDirectory: "",
+      camel2DashComponentName: false,
+    }),
+    process.env.BUNDLE_ANALYZER && addWebpackPlugin(new BundleAnalyzerPlugin()),
+    // addSpeedMeasurePlugin(),
   ),
   devServer: overrideDevServer(addServerConfig()),
 }
