@@ -5,7 +5,7 @@ ENV PROJECT_ENV production
 WORKDIR /code
 
 COPY package.json package-lock.json /code/
-RUN npm install --omit=dev
+RUN npm ci
 
 COPY . /code
 RUN npm run build

@@ -1,0 +1,44 @@
+name: deploy
+on: 
+  push: 
+    branches: ["main"]
+
+env:
+  DOCKER_REPO_URL: ccr.ccs.tencentyun.com
+  IMAGE_URL: ccr.ccs.tencentyun.com/macos/web-mac
+
+jobs:
+  setup-build-deploy:
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Build Docker image
+        run: docker build -t ${IMAGE_URL}:${GITHUB_SHA} .
+      
+      - name: Login Tencent cloud Docker repo
+        run: docker login -u ${{secrets.TENCENT_CLOUD_ACCOUNT_ID}} -p ${{secrets.TENCENT_CLOUD_ACCOUNT_PASSWORD}} ${DOCKER_REPO_URL}
+
+      - name: Push the Docker image
+        run: docker push ${IMAGE_URL}:${GITHUB_SHA}
+
+      - name: Executing remote ssh commands
+        uses: appleboy/ssh-action@v0.1.6
+        with:
+          host: ${{ secrets.REMOTE_HOST }}
+          username: ${{ secrets.REMOTE_USERNAME }}
+          password: ${{ secrets.REMOTE_PASSWORD }}
+          port: ${{ secrets.REMOTE_PORT }}
+      
+      - name: Pull Docker Image
+        run: docker pull ccr.ccs.tencentyun.com/macos/web-mac -a
+
+      - name: Deploy
+        run: | 
+          docker container stop $(docker container ps -a -q)
+          docker run ${IMAGE_URL}:${GITHUB_SHA} -d -p 80:80 -p 443:443 
+          -v /usr/local/webserver/nginx/conf/default.conf:/etc/nginx/conf.d/default.conf 
+          -v /usr/local/webserver/nginx/nginx.conf:/etc/nginx/nginx.conf
+        
