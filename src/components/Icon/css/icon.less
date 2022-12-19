@@ -6,23 +6,23 @@
   height: 20px;
   position: relative;
   box-sizing: border-box;
+}
 
-  .mask {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(82, 82, 82, 60%);
-    pointer-events: none;
-    border-radius: 20%;
-  }
+.icon {
+  width: 100%;
+  height: 100%;
+  user-select: none;
+  -webkit-user-drag: none;
+  vertical-align: top;
+}
 
-  .icon {
-    width: 100%;
-    height: 100%;
-    user-select: none;
-    -webkit-user-drag: none;
-    vertical-align: top;
-  }
+.mask {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(82, 82, 82, 60%);
+  pointer-events: none;
+  border-radius: 20%;
 }

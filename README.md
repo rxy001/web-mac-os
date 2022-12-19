@@ -15,4 +15,4 @@ TypeScript、React、Webpack、Less、Loadsh、Axios
 
 ## Link
 
-目前云服务器还在途中，之后会部署到公网。
+https://www.fe-xy.com/
